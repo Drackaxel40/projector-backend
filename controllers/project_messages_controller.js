@@ -3,7 +3,7 @@ import { dbQuery } from "../db.js";
 export default class ProjectMessagesController {
     // List all the project messages
     async listAll(req, res) {
-        const [results, fields] = await dbQuery('SELECT * FROM project_message WHERE project_uuid = ?', [req.params.project_uuid]);
+        const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin FROM project_message JOIN users ON project_message.user_uuid = users.uuid WHERE project_uuid = ?`, [req.params.project_uuid]);
         res.send(results);
     }
 

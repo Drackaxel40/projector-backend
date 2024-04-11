@@ -19,8 +19,16 @@ router.delete('/delete/:uuid', (req, res) => {
     new UsersController().delete(req, res);
 });
 
-router.put('/update/:uuid', (req, res) => {
-    new UsersController().update(req, res);
+router.put('/update/username/:uuid', (req, res) => {
+    new UsersController().updateUsername(req, res);
+});
+
+router.put('/update/email/:uuid', (req, res) => {
+    new UsersController().updateEmail(req, res);
+});
+
+router.put('/update/pwd/:uuid', (req, res) => {
+    new UsersController().updatePwd(req, res);
 });
 
 export default router;

@@ -3,7 +3,7 @@ import { dbQuery } from "../db.js";
 export default class ProjectMembersController {
     // List all the project members
     async listAll(req, res) {
-        const [results, fields] = await dbQuery(`SELECT * FROM project_members 
+        const [results, fields] = await dbQuery(`SELECT project_members.id, users.username, users.uuid, role, lastLogin  FROM project_members 
         JOIN users ON project_members.user_uuid = users.uuid
         JOIN project ON project_members.project_uuid = project.uuid
         WHERE project_uuid = ?`, [req.params.uuid]);
