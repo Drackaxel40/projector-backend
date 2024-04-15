@@ -55,7 +55,6 @@ export default class UsersController {
     // Login a user
     async login (req, res) {
         const [results, fields] = await dbQuery('SELECT * FROM users WHERE username = ?', [req.body.username]);
-        console.log (results);
         if (results.length === 0) {
             return res.status(400).json({error: 'User not found'});
         } else {
@@ -67,7 +66,7 @@ export default class UsersController {
             req.userUUID = user.uuid;
             const token = jwt.sign({userUUID: user.uuid}, process.env.JWT_SECRET_KEY);
             // Include token in the response body
-            res.header('Authorization', token).json({message: 'Login successful', token: token});
+            res.header('Authorization', token).json({message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid});
         }
     }
 }
