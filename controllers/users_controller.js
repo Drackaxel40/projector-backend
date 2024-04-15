@@ -25,7 +25,7 @@ export default class UsersController {
         };
 
         const [results, fields] = await dbQuery('INSERT INTO users (uuid, username, email, pwd, cgu) VALUES (UUID(), ?, ?, ?, ?)', [newUser.username, newUser.email, newUser.pwd, newUser.cgu]);
-         res.json({message: "User added", results: results});
+         res.json({message: "User created successfully", results: results});
     }
 
     // Update a user username by his uuid
