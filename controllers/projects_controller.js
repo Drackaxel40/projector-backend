@@ -12,8 +12,8 @@ export default class ProjectsController {
         }
     }
 
-    // Get one project by his uuid
-    async getOne(req, res) {
+    // Get projects by the user uuid
+    async getUserProjects(req, res) {
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, users.CREATED, users.UPDATED, project_deadline, project_category_id, project_status_id, username, category_name, status_name FROM project JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id

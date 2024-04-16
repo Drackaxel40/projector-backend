@@ -10,7 +10,7 @@ router.get('/', verifyToken, (req, res) => {
 });
 
 router.get('/:uuid', verifyToken, (req, res) => {
-    new ProjectsController().getOne(req, res);
+    new ProjectsController().getUserProjects(req, res);
 });
 
 router.delete('/delete/:uuid', verifyToken, (req, res) => {
