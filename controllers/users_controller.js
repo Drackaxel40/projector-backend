@@ -75,7 +75,7 @@ export default class UsersController {
     async login(req, res) {
 
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM users WHERE username = ?', [req.body.username]);
+            const [results, fields] = await dbQuery('SELECT * FROM users WHERE username = ?', [req.body.username.toLowerCase()]);
             if (results.length === 0) {
                 return res.status(400).json({ error: 'User not found' });
             } else {
@@ -105,7 +105,7 @@ export default class UsersController {
             cgu: req.body.cgu
         };
 
-        let mailExist = false;
+        let emailExist = false;
         let usernameExist = false;
 
         try {
@@ -129,7 +129,7 @@ export default class UsersController {
             }
 
         } catch (err) {
-            console.log('Une erreur est survenue lors de la création de l\'utilisateur');
+            console.log(err, 'Une erreur est survenue lors de la création de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });
         }
     }
