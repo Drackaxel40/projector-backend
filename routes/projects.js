@@ -13,6 +13,10 @@ router.get('/:uuid', verifyToken, (req, res) => {
     new ProjectsController().getUserProjects(req, res);
 });
 
+router.get('/details/:uuid', verifyToken, (req, res) => {
+    new ProjectsController().getOne(req, res);
+});
+
 router.delete('/delete/:uuid', verifyToken, (req, res) => {
     new ProjectsController().deleteOne(req, res);
 });

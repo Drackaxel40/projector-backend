@@ -25,20 +25,42 @@ export default class ProjectsController {
         }
     }
 
-    // Create a new project
+    // Get a project by his uuid
+    async getOne(req, res) {
+        try {
+            const [results, fields] = await dbQuery('SELECT project_name, project_deadline, status_name, username, project_description, project.created, project.updated, category_name FROM project JOIN project_status ON project.project_status_id = project_status.id JOIN users ON project.user_uuid = users.uuid JOIN project_categories ON project.project_category_id = project_categories.id  WHERE project.uuid = ?', [req.params.uuid]);
+            res.send(results);
+        } catch (error) {
+            res.status(500).json({ error: 'Erreur serveur' });
+            console.log("Une erreur est survenue lors de la récupération du projet");
+        }
+    }
+
+    // Create a project
     async create(req, res) {
         const newProject = {
-            project_name: req.body.project_name,
+            project_name: req.body.project_name.toLowerCase(),
             project_description: req.body.project_description,
             user_uuid: req.body.user_uuid,
             project_category_id: req.body.project_category_id
         };
+
+        if (req.body.project_deadline) {
+            newProject.project_deadline = req.body.project_deadline;
+        }
+
         try {
-            const [results, fields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id) VALUES (UUID(), ?, ?, ?, ?)', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id]);
-            res.send({ message: 'Created', results: results });
+            const [results, fields] = await dbQuery('SELECT * FROM project WHERE project_name = ?', newProject.project_name);
+
+            if (results.length > 0) {
+                return res.status(400).json({ error: 'Ce projet existe déjà' });
+            } else {
+                const [insertResults, insertFields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id, project_deadline) VALUES (UUID(), ?, ?, ?, ?, STR_TO_DATE(?, "%Y-%m-%d"))', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id, newProject.project_deadline]);
+                res.status(201).json({ message: 'Created', results: insertResults });
+            }
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
-            console.log("Une erreur est survenue lors de la création du projet");
+            console.log("Une erreur est survenue lors de la création du projet", error);
         }
     }
 
