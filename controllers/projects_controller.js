@@ -28,7 +28,12 @@ export default class ProjectsController {
     // Get a project by his uuid
     async getOne(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT project_name, project_deadline, status_name, username, project_description, project.created, project.updated, category_name FROM project JOIN project_status ON project.project_status_id = project_status.id JOIN users ON project.user_uuid = users.uuid JOIN project_categories ON project.project_category_id = project_categories.id  WHERE project.uuid = ?', [req.params.uuid]);
+            const [results, fields] = await dbQuery(`SELECT project_name, project_deadline, status_name, username, project_description, project.created, project.updated, category_name
+            FROM project
+            JOIN project_status ON project.project_status_id = project_status.id 
+            JOIN users ON project.user_uuid = users.uuid 
+            JOIN project_categories ON project.project_category_id = project_categories.id
+            WHERE project.uuid = ?`, [req.params.uuid]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });

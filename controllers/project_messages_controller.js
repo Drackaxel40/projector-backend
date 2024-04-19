@@ -4,7 +4,7 @@ export default class ProjectMessagesController {
     // List all the project messages
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin FROM project_message JOIN users ON project_message.user_uuid = users.uuid WHERE project_uuid = ?`, [req.params.project_uuid]);
+            const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin FROM project_message JOIN users ON project_message.user_uuid = users.uuid WHERE project_uuid = ? ORDER by message_created`, [req.params.project_uuid]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
