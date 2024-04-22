@@ -6,7 +6,7 @@ export default class UsersController {
     // List all users
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin FROM users');
+            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status FROM users');
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération des utilisateurs');
@@ -17,7 +17,7 @@ export default class UsersController {
     // Get one user by his uuid
     async getOne(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
+            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status FROM users WHERE uuid = ?', [req.params.uuid]);
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -87,7 +87,7 @@ export default class UsersController {
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
                 // Include token in the response body
-                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid });
+                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut});
             }
         } catch (err) {
             console.log('Une erreur est survenue lors de la connexion de l\'utilisateur');

@@ -4,7 +4,7 @@ export default class ProjectMessagesController {
     // List all the project messages
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin FROM project_message JOIN users ON project_message.user_uuid = users.uuid WHERE project_uuid = ? ORDER by message_created`, [req.params.project_uuid]);
+            const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin, modified FROM project_message JOIN users ON project_message.user_uuid = users.uuid WHERE project_uuid = ? ORDER by message_created`, [req.params.project_uuid]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
@@ -22,11 +22,11 @@ export default class ProjectMessagesController {
             console.log("Une erreur est survenue lors de la création du message de projet");
         }
     }
-sss
+
     // Update a project message
     async update(req, res) {
         try {
-            const [results, fields] = await dbQuery('UPDATE project_message SET message_content = ? WHERE id = ?', [req.body.message_content, req.params.id]);
+            const [results, fields] = await dbQuery('UPDATE project_message SET message_content = ? , modified = 1 WHERE id = ?', [req.body.message_content, req.params.id]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
