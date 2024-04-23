@@ -78,7 +78,7 @@ export default class ProjectsController {
     // Update a project by his uuid
     async updateOne(req, res) {
         try {
-            const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.params.uuid]);
+            const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ?, project_category_id = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.body.project_category_id ,req.params.uuid]);
             res.send({ message: 'Updated', results: results });
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
