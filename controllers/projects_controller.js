@@ -55,14 +55,9 @@ export default class ProjectsController {
         }
 
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM project WHERE project_name = ?', newProject.project_name);
+            const [insertResults, insertFields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id, project_deadline) VALUES (UUID(), ?, ?, ?, ?, STR_TO_DATE(?, "%Y-%m-%d"))', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id, newProject.project_deadline]);
+            res.status(201).json({ message: 'Created', results: insertResults });
 
-            if (results.length > 0) {
-                return res.status(400).json({ error: 'Ce projet existe déjà' });
-            } else {
-                const [insertResults, insertFields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id, project_deadline) VALUES (UUID(), ?, ?, ?, ?, STR_TO_DATE(?, "%Y-%m-%d"))', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id, newProject.project_deadline]);
-                res.status(201).json({ message: 'Created', results: insertResults });
-            }
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
             console.log("Une erreur est survenue lors de la création du projet", error);
