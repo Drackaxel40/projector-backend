@@ -17,7 +17,8 @@ export default class ProjectsController {
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, users.CREATED, users.UPDATED, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created FROM project JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
-            JOIN project_status ON project.project_status_id = project_status.id WHERE user_uuid = ?`, [req.params.uuid]);
+            JOIN project_status ON project.project_status_id = project_status.id WHERE user_uuid = ? 
+            ORDER by project_created` , [req.params.uuid]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
