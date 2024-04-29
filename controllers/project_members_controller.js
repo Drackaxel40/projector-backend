@@ -56,4 +56,17 @@ export default class ProjectMembersController {
             console.log("Une erreur est survenue lors de la suppression du membre du projet");
         }
     }
+
+    // Get all the projects where the user is a member
+    async getUserProjects(req, res) {
+        try {
+            const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role FROM project_members 
+            JOIN project ON project_members.project_uuid = project.uuid
+            WHERE project_members.user_uuid = ?`, [req.params.uuid]);
+            res.send(results);
+        } catch (error) {
+            res.status(500).json({ error: 'Erreur serveur' });
+            console.log("Une erreur est survenue lors de la récupération des projets de l'utilisateur", error);
+        }
+    }
 }
