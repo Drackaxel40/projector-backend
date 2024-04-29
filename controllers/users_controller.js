@@ -6,7 +6,7 @@ export default class UsersController {
     // List all users
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status FROM users');
+            const [results, fields] = await dbQuery('SELECT username, email, users.CREATED, lastLogin, statut FROM users');
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération des utilisateurs');
