@@ -7,7 +7,8 @@ export default class ProjectMembersController {
             const [results, fields] = await dbQuery(`SELECT project_members.id, users.username, users.uuid, role, lastLogin  FROM project_members 
             JOIN users ON project_members.user_uuid = users.uuid
             JOIN project ON project_members.project_uuid = project.uuid
-            WHERE project_uuid = ?`, [req.params.uuid]);
+            WHERE project_uuid = ?
+            ORDER BY users.username`, [req.params.uuid]);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
@@ -17,6 +18,14 @@ export default class ProjectMembersController {
 
     // Create a new project member
     async create(req, res) {
+
+        // Check if the user is already a member of the project
+        const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.body.user_uuid]);
+        if (resultsCheck.length > 0) {
+            res.status(400).json({ error: 'L\'utilisateur est déjà membre du projet' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('INSERT INTO project_members (project_uuid, user_uuid, role) VALUES (?, ?, ?)', [req.body.project_uuid, req.body.user_uuid, req.body.role]);
             res.send(results);
