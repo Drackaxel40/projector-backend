@@ -12,6 +12,7 @@ import projectMessagesRouter from './routes/project_messages.js';
 import projectStatusRouter from './routes/project_status.js';
 import tasksRouter from './routes/tasks.js';
 import projectUsersTasksRouter from './routes/project_users_tasks.js';
+import taskStatusRouter from './routes/task_status.js';
 
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/project_members', projectMembersRouter);
 app.use('/project_messages', projectMessagesRouter);
 app.use('/project_status', projectStatusRouter);
 app.use('/tasks', tasksRouter);
+app.use('/task_status', taskStatusRouter);
 app.use('/tasks_users', projectUsersTasksRouter);
 
 // Start the server
