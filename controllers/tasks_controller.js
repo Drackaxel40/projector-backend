@@ -18,7 +18,7 @@ export default class TasksController {
     // Create a task
     async create(req, res) {
         try {
-            const [results, fields] = await dbQuery('INSERT INTO tasks (task_name, task_description, task_status_id, project_uuid) VALUES (?, ?, ?, ?)', [req.body.task_name, req.body.task_description, req.body.task_status, req.body.project_uuid]);
+            const [results, fields] = await dbQuery('INSERT INTO tasks (task_name, task_description, project_uuid) VALUES (?, ?, ?)', [req.body.task_name, req.body.task_description, req.body.project_uuid]);
             res.json(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
