@@ -13,16 +13,8 @@ router.post('/create', verifyToken, (req, res) => {
     new TasksController().create(req, res);
 });
 
-router.put('/update/status/:id', verifyToken, (req, res) => {
-    new TasksController().updateStatus(req, res);
-});
-
-router.put('/update/name/:id', verifyToken, (req, res) => {
-    new TasksController().updateName(req, res);
-});
-
-router.put('/update/description/:id', verifyToken, (req, res) => {
-    new TasksController().updateDescription(req, res);
+router.put('/update/:id', verifyToken, (req, res) => {
+    new TasksController().update(req, res);
 });
 
 router.delete('/delete/:id', verifyToken, (req, res) => {
