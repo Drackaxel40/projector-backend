@@ -24,17 +24,17 @@ router.get('/:uuid', verifyToken, (req, res) => {
     new UsersController().getOne(req, res);
 });
 
+router.get('/username/:username', verifyToken, (req, res) => {
+    new UsersController().getOneByUsername(req, res);
+});
+
 
 router.delete('/delete/:uuid', verifyToken, (req, res) => {
     new UsersController().delete(req, res);
 });
 
-router.put('/update/username/:uuid', verifyToken, (req, res) => {
-    new UsersController().updateUsername(req, res);
-});
-
-router.put('/update/email/:uuid', verifyToken, (req, res) => {
-    new UsersController().updateEmail(req, res);
+router.put('/update/:uuid', verifyToken, (req, res) => {
+    new UsersController().update(req, res);
 });
 
 router.put('/update/pwd/:uuid', verifyToken, (req, res) => {

@@ -6,7 +6,7 @@ export default class UsersController {
     // List all users
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT uuid, username, email, users.CREATED, lastLogin, statut FROM users ORDER BY users.username');
+            const [results, fields] = await dbQuery('SELECT uuid, username, email, users.CREATED, lastLogin, statut, bio FROM users ORDER BY users.username');
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération des utilisateurs');
@@ -17,7 +17,18 @@ export default class UsersController {
     // Get one user by his uuid
     async getOne(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status FROM users WHERE uuid = ?', [req.params.uuid]);
+            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio FROM users WHERE uuid = ?', [req.params.uuid]);
+            res.send(results);
+        } catch (err) {
+            console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
+            res.status(500).json({ error: 'Erreur serveur' });
+        }
+    }
+
+    // Get one user by his username
+    async getOneByUsername(req, res) {
+        try {
+            const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio FROM users WHERE username = ?', [req.params.username]);
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -26,27 +37,16 @@ export default class UsersController {
     }
 
 
-    // Update a user username by his uuid
-    async updateUsername(req, res) {
+    // Update a user
+    async update(req, res) {
         try {
-            const [results] = await dbQuery('UPDATE users SET username = ? WHERE uuid = ?', [req.body.username, req.params.uuid]);
+            const [results] = await dbQuery('UPDATE users SET username = ?, email = ?, bio = ? WHERE uuid = ?', [req.body.username, req.body.email, req.body.bio, req.params.uuid]);
             res.json({ message: "User updated", results: results });
         } catch (err) {
             console.log('Une erreur est survenue lors de la mise à jour du nom d\'utilisateur de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });
         }
 
-    }
-
-    // Update a user email by his uuid
-    async updateEmail(req, res) {
-        try {
-            const [results] = await dbQuery('UPDATE users SET email = ? WHERE uuid = ?', [req.body.email, req.params.uuid]);
-            res.json({ message: "User updated", results: results });
-        } catch (err) {
-            console.log('Une erreur est survenue lors de la mise à jour de l\'email de l\'utilisateur');
-            res.status(500).json({ error: 'Erreur serveur' });
-        }
     }
 
     // Update a user password by his uuid
@@ -88,6 +88,9 @@ export default class UsersController {
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
                 // Include token in the response body
                 res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut});
+
+                // Update last login date
+                await dbQuery('UPDATE users SET lastLogin = NOW() WHERE uuid = ?', [user.uuid]);
             }
         } catch (err) {
             console.log('Une erreur est survenue lors de la connexion de l\'utilisateur');
