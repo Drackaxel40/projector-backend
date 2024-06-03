@@ -51,8 +51,10 @@ export default class UsersController {
 
     // Update a user password by his uuid
     async updatePwd(req, res) {
+        const pwd = await bcrypt.hash(req.body.pwd, 10);
+
         try {
-            const [results] = await dbQuery('UPDATE users SET pwd = ? WHERE uuid = ?', [req.body.pwd, req.params.uuid]);
+            const [results] = await dbQuery('UPDATE users SET pwd = ? WHERE uuid = ?', [pwd, req.params.uuid]);
             res.json({ message: "User updated", results: results });
         } catch (err) {
             console.log('Une erreur est survenue lors de la mise à jour du mot de passe de l\'utilisateur');
@@ -94,7 +96,6 @@ export default class UsersController {
             }
         } catch (err) {
             console.log('Une erreur est survenue lors de la connexion de l\'utilisateur');
-            res.status(500).json({ error: 'Erreur serveur' });
         }
     }
 
