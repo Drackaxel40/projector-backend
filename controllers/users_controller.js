@@ -6,7 +6,7 @@ export default class UsersController {
     // List all users
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT uuid, username, email, users.CREATED, lastLogin, statut, bio FROM users ORDER BY users.username');
+            const [results, fields] = await dbQuery('SELECT uuid, username, email, users.CREATED, lastLogin, statut, bio, profilePicture FROM users ORDER BY users.username');
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération des utilisateurs');
@@ -17,7 +17,7 @@ export default class UsersController {
     // Get one user by his uuid
     async getOne(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio FROM users WHERE uuid = ?', [req.params.uuid]);
+            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?', [req.params.uuid]);
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -28,7 +28,7 @@ export default class UsersController {
     // Get one user by his username
     async getOneByUsername(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio FROM users WHERE username = ?', [req.params.username]);
+            const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio, profilePicture FROM users WHERE username = ?', [req.params.username]);
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -40,7 +40,7 @@ export default class UsersController {
     // Update a user
     async update(req, res) {
         try {
-            const [results] = await dbQuery('UPDATE users SET username = ?, email = ?, bio = ? WHERE uuid = ?', [req.body.username, req.body.email, req.body.bio, req.params.uuid]);
+            const [results] = await dbQuery('UPDATE users SET username = ?, email = ?, bio = ?, profilePicture = ? WHERE uuid = ?', [req.body.username, req.body.email, req.body.bio, req.body.profilePicture, req.params.uuid]);
             res.json({ message: "User updated", results: results });
         } catch (err) {
             console.log('Une erreur est survenue lors de la mise à jour du nom d\'utilisateur de l\'utilisateur');
