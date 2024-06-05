@@ -89,7 +89,7 @@ export default class UsersController {
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
                 // Include token in the response body
-                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut});
+                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture});
 
                 // Update last login date
                 await dbQuery('UPDATE users SET lastLogin = NOW() WHERE uuid = ?', [user.uuid]);

@@ -1,10 +1,14 @@
 import express from 'express';
+import MediaController from '../controllers/media_controller.js';
+import verifyToken from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
-import { uploadImage } from '../controllers/media_controller.js';
-import verifyToken from '../middleware/auth.js';
 
 const router = express.Router();
+const mediaController = new MediaController();
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const uploadsPath = path.join(__dirname, '../uploads');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -30,6 +34,9 @@ const upload = multer({
 });
 
 // Post image
-router.post('/', verifyToken, upload.single('image'), uploadImage);
+router.post('/', verifyToken, upload.single('image'), mediaController.uploadImage);
+
+// Delete image
+router.delete('/:imageName', verifyToken, (req, res) => mediaController.deleteImage(req, res));
 
 export default router;
