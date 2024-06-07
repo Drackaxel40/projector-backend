@@ -60,8 +60,9 @@ export default class ProjectMembersController {
     // Get all the projects where the user is a member
     async getUserProjects(req, res) {
         try {
-            const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role FROM project_members 
+            const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role,project_created , project_category_id, category_name FROM project_members 
             JOIN project ON project_members.project_uuid = project.uuid
+            JOIN project_categories ON project.project_category_id = project_categories.id
             WHERE project_members.user_uuid = ?`, [req.params.uuid]);
             res.send(results);
         } catch (error) {
