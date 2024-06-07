@@ -89,7 +89,7 @@ export default class UsersController {
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
                 // Include token in the response body
-                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture});
+                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture });
 
                 // Update last login date
                 await dbQuery('UPDATE users SET lastLogin = NOW() WHERE uuid = ?', [user.uuid]);
@@ -102,38 +102,40 @@ export default class UsersController {
 
     // Create a new user
     async create(req, res) {
+
+        // Validate request body
+        if (!req.body.username || !req.body.email || !req.body.pwd || !req.body.cgu) {
+            return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
         const newUser = {
             username: req.body.username,
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
             pwd: await bcrypt.hash(req.body.pwd, 10),
             cgu: req.body.cgu
         };
 
-        let emailExist = false;
-        let usernameExist = false;
+        const lowerCaseUsername = newUser.username.toLowerCase();
 
         try {
 
-            const [resultsMail, fieldsMail] = await dbQuery('SELECT * FROM users WHERE email = ?', [newUser.email]);
-            const [resultsUsername, fieldsUsername] = await dbQuery('SELECT * FROM users WHERE username = ?', [newUser.username]);
+            const [resultsMail] = await dbQuery('SELECT * FROM users WHERE email = ?', [newUser.email]);
+            const [resultsUsername] = await dbQuery('SELECT * FROM users WHERE LOWER(username) = ?', [lowerCaseUsername]);
 
             if (resultsMail.length > 0) {
-                mailExist = true;
-                return res.status(400).json({ error: 'Cet email est déjà utilisé' });
+                return res.status(400).json({ error: 'Cette adresse email est déjà utilisée.' });
             }
 
             if (resultsUsername.length > 0) {
-                usernameExist = true;
-                return res.status(400).json({ error: 'Ce nom d\'utilisateur est déjà utilisé' });
+                return res.status(400).json({ error: 'Ce pseudo est déjà utilisé. Merci de choisir un autre.' });
             }
 
-            if (!emailExist && !usernameExist) {
-                const [results, fields] = await dbQuery('INSERT INTO users (uuid, username, email, pwd, cgu) VALUES (UUID(), ?, ?, ?, ?)', [newUser.username, newUser.email, newUser.pwd, newUser.cgu]);
-                res.json({ message: "Utilisateur crée avec success", results: results });
-            }
+            const [results] = await dbQuery('INSERT INTO users (uuid, username, email, pwd, cgu) VALUES (UUID(), ?, ?, ?, ?)', [newUser.username, newUser.email, newUser.pwd, newUser.cgu]);
+            res.json({ message: "Utilisateur crée avec success", results: results });
+
 
         } catch (err) {
-            console.log(err, 'Une erreur est survenue lors de la création de l\'utilisateur');
+            console.log(err, 'Une erreur est survenue lors de la création de l\'utilisateur', err);
             res.status(500).json({ error: 'Erreur serveur' });
         }
     }
