@@ -75,7 +75,6 @@ export default class UsersController {
 
     // Login a user
     async login(req, res) {
-
         try {
             const [results, fields] = await dbQuery('SELECT * FROM users WHERE username = ?', [req.body.username.toLowerCase()]);
             if (results.length === 0) {
