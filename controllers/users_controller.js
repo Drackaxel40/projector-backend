@@ -75,8 +75,12 @@ export default class UsersController {
 
     // Login a user
     async login(req, res) {
+        if (!req.body.username || !req.body.pwd) {
+            return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM users WHERE username = ?', [req.body.username.toLowerCase()]);
+            const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY username = ?', [req.body.username]);
             if (results.length === 0) {
                 return res.status(400).json({ error: 'User not found' });
             } else {
@@ -109,7 +113,7 @@ export default class UsersController {
 
         const newUser = {
             username: req.body.username,
-            email: req.body.email.toLowerCase(),
+            email: req.body.email,
             pwd: await bcrypt.hash(req.body.pwd, 10),
             cgu: req.body.cgu
         };
