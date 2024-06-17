@@ -82,12 +82,12 @@ export default class UsersController {
         try {
             const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY username = ?', [req.body.username]);
             if (results.length === 0) {
-                return res.status(400).json({ error: 'User not found' });
+                return res.status(400).json({ error: 'Wrong username or password' });
             } else {
                 const user = results[0];
                 const validPwd = await bcrypt.compare(req.body.pwd, user.pwd);
                 if (!validPwd) {
-                    return res.status(400).json({ error: 'Invalid password' });
+                    return res.status(400).json({ error: 'Wrong username or password' });
                 }
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
