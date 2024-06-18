@@ -119,7 +119,7 @@ export default class UsersController {
                     return res.status(400).json({ error: 'Wrong username or password' });
                 }
                 req.userUUID = user.uuid;
-                const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY);
+                const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
                 // Include token in the response body
                 res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture });
 
