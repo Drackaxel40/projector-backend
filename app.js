@@ -26,8 +26,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+const allowedOrigins = [process.env.CLIENT_URL, process.env.BACKOFFICE_URL];
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 };
 
