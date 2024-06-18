@@ -4,7 +4,12 @@ export default class ProjectsController {
     // List all projects
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM project');
+            const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created
+            FROM project
+            JOIN users ON project.user_uuid = users.uuid
+            JOIN project_categories ON project.project_category_id = project_categories.id
+            JOIN project_status ON project.project_status_id = project_status.id
+            ORDER by project_name ASC`);
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });

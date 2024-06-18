@@ -39,15 +39,44 @@ export default class UsersController {
 
     // Update a user
     async update(req, res) {
+        if (!req.body.username || !req.body.email) {
+            return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
+        if (req.body.username.length < 3 || req.body.username.length > 20) {
+            return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir entre 3 et 20 caractères' });
+        }
+
+        if (req.body.bio && req.body.bio.length > 200) {
+            return res.status(400).json({ error: 'La bio ne doit pas dépasser 200 caractères' });
+        }
+
+        let statut = null;
+
+        if (req.body.statut) {
+            statut = req.body.statut;
+        }
+
         try {
-            const [results] = await dbQuery('UPDATE users SET username = ?, email = ?, bio = ?, profilePicture = ? WHERE uuid = ?', [req.body.username, req.body.email, req.body.bio, req.body.profilePicture, req.params.uuid]);
+            let query = 'UPDATE users SET username = ?, email = ?, bio = ?, profilePicture = ?';
+            let params = [req.body.username, req.body.email, req.body.bio, req.body.profilePicture];
+
+            if (statut) {
+                query += ', statut = ?';
+                params.push(statut);
+            }
+
+            query += ' WHERE uuid = ?';
+            params.push(req.params.uuid);
+
+            const [results] = await dbQuery(query, params);
             res.json({ message: "User updated", results: results });
         } catch (err) {
             console.log('Une erreur est survenue lors de la mise à jour du nom d\'utilisateur de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });
         }
-
     }
+
 
     // Update a user password by his uuid
     async updatePwd(req, res) {
