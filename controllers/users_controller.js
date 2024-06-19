@@ -104,10 +104,11 @@ export default class UsersController {
 
     // Login a user
     async login(req, res) {
+
         if (!req.body.username || !req.body.pwd) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
-
+        
         try {
             const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY username = ?', [req.body.username]);
             if (results.length === 0) {
