@@ -48,8 +48,34 @@ export default class ProjectUsersTasks {
             return res.status(400).json({ error: 'Données manquantes' });
         }
 
-
         try {
+            // Check if the task exists
+            const [taskResults, taskFields] = await dbQuery('SELECT * FROM tasks WHERE id = ?', [req.body.task_id]);
+            if (taskResults.length === 0) {
+                return res.status(404).json({ error: 'Tâche non trouvée' });
+            }
+
+            // Check if the user exists
+            const [userResults, userFields] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.body.task_user_uuid]);
+            if (userResults.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
+            // Check if the user is already in the task
+            const [userTaskResults, userTaskFields] = await dbQuery('SELECT * FROM project_users_tasks WHERE task_id = ? AND task_user_uuid = ?', [req.body.task_id, req.body.task_user_uuid]);
+            if (userTaskResults.length > 0) {
+                return res.status(409).json({ error: 'L\'utilisateur est déjà dans la tâche' });
+            }
+
+            // Check if the requesting user is the project owner
+            const projectAuthor = await dbQuery(`SELECT project.user_uuid
+            FROM project JOIN tasks ON project.uuid = tasks.project_uuid 
+            WHERE tasks.id = ?`, [req.body.task_id]);
+            if (projectAuthor[0].user_uuid !== req.user.uuid) {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à ajouter un utilisateur à cette tâche' });
+            }
+
+            // Add the user to the task
             const [results, fields] = await dbQuery(`INSERT INTO project_users_tasks (task_id, task_user_uuid) VALUES (?, ?)`, [req.body.task_id, req.body.task_user_uuid]);
             res.json(results);
         } catch (error) {
@@ -66,6 +92,18 @@ export default class ProjectUsersTasks {
         }
 
         try {
+            // Check if the requesting user is the project owner
+            const projectAuthor = await dbQuery(`
+                SELECT project.user_uuid 
+                FROM project 
+                JOIN tasks ON project.uuid = tasks.project_uuid
+                JOIN project_users_tasks ON tasks.id = project_users_tasks.task_id
+                WHERE project_users_tasks.id = ?`, [req.params.id]);
+
+            if (projectAuthor[0].user_uuid !== req.user.uuid) {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à supprimer un utilisateur de cette tâche' });
+            }
+
             const [results, fields] = await dbQuery(`DELETE FROM project_users_tasks WHERE id = ?`, [req.params.id]);
             res.json(results);
         } catch (error) {

@@ -4,7 +4,8 @@ export default class ProjectsController {
     // List all projects
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created
+            const [results, fields] = await dbQuery(`
+            SELECT project.uuid, project_name, project_description, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created
             FROM project
             JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
@@ -26,12 +27,14 @@ export default class ProjectsController {
             return;
         }
 
-        // Check if the user is the owner of the account
-        if (req.requestingUserUUID !== req.params.uuid) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
-        }
-
         try {
+
+            // Check if the user exists
+            const userQuery = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
+            if (userQuery[0].length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, users.CREATED, users.UPDATED, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created FROM project JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
             JOIN project_status ON project.project_status_id = project_status.id WHERE user_uuid = ? 
@@ -59,6 +62,12 @@ export default class ProjectsController {
             JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
             WHERE project.uuid = ?`, [req.params.uuid]);
+
+            // Check if the project exists
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Projet non trouvé' });
+            }
+
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
@@ -104,19 +113,45 @@ export default class ProjectsController {
             return;
         }
 
-        // Check if the requesting user is the owner of the project
-        const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
-        const user_uuid = result[0][0].user_uuid;
-        if (user_uuid !== req.requestingUserUUID) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
-        }
-
         try {
+
+            // Get the statut of the requesting user
+            const statutQuery = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+            const statut = statutQuery[0][0].statut;
+
+
+            // Check if the requesting user is the owner of the project or an administrator
+            const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
+            const user_uuid = result[0][0].user_uuid;
+            if (user_uuid !== req.requestingUserUUID && statut !== 'administrateur') {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+            }
+
+            // Check if the project exists
+            const projectQuery = await dbQuery('SELECT * FROM project WHERE uuid = ?', [req.params.uuid]);
+            if (projectQuery[0].length === 0) {
+                return res.status(404).json({ error: 'Projet non trouvé' });
+            }
+
+            // Check if the project has tasks
+            const tasksQuery = await dbQuery('SELECT * FROM task WHERE project_uuid = ?', [req.params.uuid]);
+            if (tasksQuery[0].length > 0) {
+                return res.status(400).json({ error: 'Impossible de supprimer un projet contenant des tâches' });
+            }
+
+            // Check if the project has members
+            const membersQuery = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
+            if (membersQuery[0].length > 0) {
+                return res.status(400).json({ error: 'Impossible de supprimer un projet contenant des membres' });
+            }
+
+            // Delete the project
             const [results, fields] = await dbQuery('DELETE FROM project WHERE uuid = ?', [req.params.uuid]);
             res.send({ message: 'Deleted', results: results });
+
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
-            console.log("Une erreur est survenue lors de la suppression du projet");
+            console.log("Une erreur est survenue lors de la suppression du projet", error);
         }
     }
 
@@ -129,14 +164,23 @@ export default class ProjectsController {
             return;
         }
 
-        // Check if the requesting user is the owner of the project
-        const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
-        const user_uuid = result[0][0].user_uuid;
-        if (user_uuid !== req.requestingUserUUID) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
-        }
-
         try {
+
+            // Check if the requesting user is the owner of the project
+            const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
+            const user_uuid = result[0][0].user_uuid;
+
+            if (user_uuid !== req.requestingUserUUID) {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+            }
+
+            // Check if the project exists
+            const projectQuery = await dbQuery('SELECT * FROM project WHERE uuid = ?', [req.params.uuid]);
+            if (projectQuery[0].length === 0) {
+                return res.status(404).json({ error: 'Projet non trouvé' });
+            }
+
+
             const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ?, project_category_id = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.body.project_category_id, req.params.uuid]);
             res.send({ message: 'Updated', results: results });
         } catch (error) {

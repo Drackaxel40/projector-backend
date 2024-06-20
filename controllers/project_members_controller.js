@@ -29,21 +29,21 @@ export default class ProjectMembersController {
             return res.status(400).json({ error: 'Données manquantes' });
         }
 
-        // Check if the requesting user is the owner of the project
-        const resultsOwner = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.body.project_uuid]);
-        const projectOwner = resultsOwner[0][0].user_uuid;
-        if (projectOwner !== req.requestingUserUUID) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
-        }
-
-        // Check if the user is already a member of the project
-        const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.body.user_uuid]);
-        if (resultsCheck.length > 0) {
-            res.status(400).json({ error: 'L\'utilisateur est déjà membre du projet' });
-            return;
-        }
-
         try {
+            // Check if the requesting user is the owner of the project
+            const resultsOwner = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.body.project_uuid]);
+            const projectOwner = resultsOwner[0][0].user_uuid;
+            if (projectOwner !== req.requestingUserUUID) {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+            }
+
+            // Check if the user is already a member of the project
+            const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.body.user_uuid]);
+            if (resultsCheck.length > 0) {
+                res.status(400).json({ error: 'L\'utilisateur est déjà membre du projet' });
+                return;
+            }
+
             const [results, fields] = await dbQuery('INSERT INTO project_members (project_uuid, user_uuid, role) VALUES (?, ?, ?)', [req.body.project_uuid, req.body.user_uuid, req.body.role]);
             res.send(results);
         } catch (error) {
@@ -57,6 +57,19 @@ export default class ProjectMembersController {
         // Check if the role and the id are provided
         if (!req.body.role || !req.params.id) {
             return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+        // Get the project owner
+        const resultsOwner = await dbQuery(`SELECT project.user_uuid 
+            from project_members
+            JOIN project ON project_members.project_uuid = project.uuid
+            WHERE id = ?`, [req.params.id]);
+        const projectOwner = resultsOwner[0][0].user_uuid;
+
+        // Check if the requesting user is the owner of the project
+        if (projectOwner !== req.requestingUserUUID) {
+            console.log("Le user n'est pas le propriétaire du projet");
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
         try {
@@ -76,6 +89,19 @@ export default class ProjectMembersController {
         }
 
         try {
+            // Get the project owner
+            const resultsOwner = await dbQuery(`SELECT project.user_uuid 
+            from project_members
+            JOIN project ON project_members.project_uuid = project.uuid
+            WHERE id = ?`, [req.params.id]);
+            const projectOwner = resultsOwner[0][0].user_uuid;
+
+            // Check if the requesting user is the owner of the project
+            if (projectOwner !== req.requestingUserUUID) {
+                console.log("Le user n'est pas le propriétaire du projet");
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+            }
+
             const [results, fields] = await dbQuery('DELETE FROM project_members WHERE id = ?', [req.params.id]);
             res.send(results);
         } catch (error) {

@@ -24,6 +24,11 @@ export default class UsersController {
 
         try {
             const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?', [req.params.uuid]);
+            // Check if the user exists
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+            
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -40,7 +45,14 @@ export default class UsersController {
         }
 
         try {
+
             const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio, profilePicture FROM users WHERE username = ?', [req.params.username]);
+
+            // Check if the user exists
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -85,6 +97,14 @@ export default class UsersController {
         }
 
         try {
+
+            // Check if the user exists
+            const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
+            if (resultsCheck.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
+            // Update the user
             let query = 'UPDATE users SET username = ?, email = ?, bio = ?, profilePicture = ?';
             let params = [req.body.username, req.body.email, req.body.bio, req.body.profilePicture];
 
@@ -98,6 +118,7 @@ export default class UsersController {
 
             const [results] = await dbQuery(query, params);
             res.json({ message: "User updated", results: results });
+
         } catch (err) {
             console.log('Une erreur est survenue lors de la mise à jour du nom d\'utilisateur de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });
@@ -122,6 +143,14 @@ export default class UsersController {
         const pwd = await bcrypt.hash(req.body.pwd, 10);
 
         try {
+
+            // Check if the user exists
+            const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
+            if (resultsCheck.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
+            // Update the user password
             const [results] = await dbQuery('UPDATE users SET pwd = ? WHERE uuid = ?', [pwd, req.params.uuid]);
             res.json({ message: "User updated", results: results });
         } catch (err) {
@@ -144,8 +173,17 @@ export default class UsersController {
         }
 
         try {
+
+            // Check if the user exists
+            const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
+            if (resultsCheck.length === 0) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+
+            // Delete the user
             const [results, fields] = await dbQuery('DELETE FROM users WHERE uuid = ?', [req.params.uuid]);
             res.json({ message: "User deleted", results: results });
+
         } catch (err) {
             console.log('Une erreur est survenue lors de la suppression de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });

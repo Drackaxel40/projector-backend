@@ -21,6 +21,13 @@ export default class ProjectStatusController {
             return res.status(400).json({ error: 'Données manquantes' });
         }
 
+        // Check if the user is an administrator
+        const result = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+        const statut = result[0][0].statut;
+        if (statut !== 'administrateur') {
+            return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
+        }
+
         try {
             const [results, fields] = await dbQuery('INSERT INTO project_status (status_name) VALUES (?)', [req.body.status_name]);
             res.json(results);
@@ -39,6 +46,19 @@ export default class ProjectStatusController {
         }
 
         try {
+            // Check if the user is an administrator
+            const result = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+            const statut = result[0][0].statut;
+            if (statut !== 'administrateur') {
+                return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
+            }
+
+            // Check if the project status exists
+            const [projectStatusResults, projectStatusFields] = await dbQuery('SELECT * FROM project_status WHERE id = ?', [req.params.id]);
+            if (projectStatusResults.length === 0) {
+                return res.status(404).json({ error: 'Statut de projet non trouvé' });
+            }
+
             const [results, fields] = await dbQuery('UPDATE project_status SET status_name = ? WHERE id = ?', [req.body.status_name, req.params.id]);
             res.json(results);
         } catch (error) {
@@ -56,6 +76,20 @@ export default class ProjectStatusController {
         }
 
         try {
+            // Check if the user is an administrator
+            const result = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+            const statut = result[0][0].statut;
+            if (statut !== 'administrateur') {
+                return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
+            }
+
+            // Check if the project status exists
+            const [projectStatusResults, projectStatusFields] = await dbQuery('SELECT * FROM project_status WHERE id = ?', [req.params.id]);
+            if (projectStatusResults.length === 0) {
+                return res.status(404).json({ error: 'Statut de projet non trouvé' });
+            }
+
+            // Delete the project status
             const [results, fields] = await dbQuery('DELETE FROM project_status WHERE id = ?', [req.params.id]);
             res.json(results);
         } catch (error) {

@@ -32,11 +32,17 @@ export default class TaskStatusController {
     async update(req, res) {
         // Check if the status_name and the id are provided
         if (!req.body.status_name || !req.params.id) {
-            res.status(400).json({ error: 'Données manquantes'});
+            res.status(400).json({ error: 'Données manquantes' });
             return;
         }
 
         try {
+            // Check if the task status exists
+            const [taskStatusResults, taskStatusFields] = await dbQuery('SELECT * FROM task_status WHERE id = ?', [req.params.id]);
+            if (taskStatusResults.length === 0) {
+                return res.status(404).json({ error: 'Statut de tâche non trouvé' });
+            }
+            
             const [results, fields] = await dbQuery('UPDATE task_status SET status_name = ? WHERE id = ?', [req.body.status_name, req.params.id]);
             res.json(results);
         } catch (error) {
@@ -46,7 +52,7 @@ export default class TaskStatusController {
 
     // Delete a task status
     async delete(req, res) {
-        
+
         // Check if the id is provided
         if (!req.params.id) {
             res.status(400).json({ error: 'Id manquant' });
@@ -54,6 +60,12 @@ export default class TaskStatusController {
         }
 
         try {
+            // Check if the task status exists
+            const [taskStatusResults, taskStatusFields] = await dbQuery('SELECT * FROM task_status WHERE id = ?', [req.params.id]);
+            if (taskStatusResults.length === 0) {
+                return res.status(404).json({ error: 'Statut de tâche non trouvé' });
+            }
+
             const [results, fields] = await dbQuery('DELETE FROM task_status WHERE id = ?', [req.params.id]);
             res.json(results);
         } catch (error) {

@@ -49,6 +49,14 @@ export default class TasksController {
         }
 
         try {
+
+            // Check if the task exists
+            const [taskResults, taskFields] = await dbQuery('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+            if (taskResults.length === 0) {
+                return res.status(404).json({ error: 'Tâche non trouvée' });
+            }
+
+            // Update the task
             const [results, fields] = await dbQuery('UPDATE tasks SET task_name = ?, task_status_id = ?, task_description = ? WHERE id = ?', [req.body.task_name, req.body.task_status_id, req.body.task_description, req.params.id]);
             res.json(results);
         } catch (error) {
@@ -65,6 +73,13 @@ export default class TasksController {
         }
 
         try {
+            // Check if the task exists
+            const [taskResults, taskFields] = await dbQuery('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+            if (taskResults.length === 0) {
+                return res.status(404).json({ error: 'Tâche non trouvée' });
+            }
+
+            // Delete the task
             const [results, fields] = await dbQuery('DELETE FROM tasks WHERE id = ?', [req.params.id]);
             res.json(results);
         } catch (error) {
