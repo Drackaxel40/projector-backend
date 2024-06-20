@@ -26,6 +26,11 @@ export default class ProjectsController {
             return;
         }
 
+        // Check if the user is the owner of the account
+        if (req.requestingUserUUID !== req.params.uuid) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, users.CREATED, users.UPDATED, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created FROM project JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
@@ -99,6 +104,12 @@ export default class ProjectsController {
             return;
         }
 
+        // Check if the requesting user is the owner of the project
+        const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
+        if (result[0].user_uuid !== req.requestingUserUUID) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM project WHERE uuid = ?', [req.params.uuid]);
             res.send({ message: 'Deleted', results: results });
@@ -110,15 +121,21 @@ export default class ProjectsController {
 
     // Update a project by his uuid
     async updateOne(req, res) {
-        
+
         // Check if the project_name, project_description, project_status_id, project_deadline and project_category_id are provided
         if (!req.body.project_name || !req.body.project_description || !req.body.project_status_id || !req.body.project_deadline || !req.body.project_category_id) {
             res.status(400).json({ error: 'Données manquantes' });
             return;
         }
 
+        // Check if the requesting user is the owner of the project
+        const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
+        if (result[0].user_uuid !== req.requestingUserUUID) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
         try {
-            const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ?, project_category_id = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.body.project_category_id ,req.params.uuid]);
+            const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ?, project_category_id = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.body.project_category_id, req.params.uuid]);
             res.send({ message: 'Updated', results: results });
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });

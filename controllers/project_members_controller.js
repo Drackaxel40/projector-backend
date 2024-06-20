@@ -29,6 +29,12 @@ export default class ProjectMembersController {
             return res.status(400).json({ error: 'Données manquantes' });
         }
 
+        // Check if the requesting user is the owner of the project
+        const [resultsOwner, fieldsOwner] = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.body.project_uuid]);
+        if (resultsOwner[0].user_uuid !== req.requestingUserUUID) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
         // Check if the user is already a member of the project
         const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.body.user_uuid]);
         if (resultsCheck.length > 0) {
@@ -51,7 +57,6 @@ export default class ProjectMembersController {
         if (!req.body.role || !req.params.id) {
             return res.status(400).json({ error: 'Données manquantes' });
         }
-
 
         try {
             const [results, fields] = await dbQuery('UPDATE project_members SET role = ? WHERE id = ?', [req.body.role, req.params.id]);

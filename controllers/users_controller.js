@@ -52,8 +52,18 @@ export default class UsersController {
     // Update a user
     async update(req, res) {
 
-        // Check if username and email are provided
-        if (!req.body.username || !req.body.email) {
+        // Check if the user uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
+        // Check if the user is the owner of the account
+        if (req.requestingUserUUID !== req.params.uuid) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
+        // Check if uuid, username, email, bio and profilePicture are provided
+        if (!req.body.username || !req.body.email || !req.body.bio || !req.body.profilePicture) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
@@ -69,7 +79,7 @@ export default class UsersController {
 
         let statut = null;
 
-        // Check if the statut is provided, if yes, set it to the request body statut
+        // Check if the statut is provided
         if (req.body.statut) {
             statut = req.body.statut;
         }
@@ -103,6 +113,11 @@ export default class UsersController {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
+         // Check if the user is the owner of the account
+        if (req.requestingUserUUID !== req.params.uuid) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+        }
+
         // Hash the new password
         const pwd = await bcrypt.hash(req.body.pwd, 10);
 
@@ -121,6 +136,11 @@ export default class UsersController {
         // Check if the user uuid is provided
         if (!req.params.uuid) {
             return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
+         // Check if the user is the owner of the account
+        if (req.requestingUserUUID !== req.params.uuid) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
         try {
