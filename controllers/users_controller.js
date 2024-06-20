@@ -18,7 +18,7 @@ export default class UsersController {
     async getOne(req, res) {
 
         // Check if the user uuid is provided
-        if(!req.params.uuid){
+        if (!req.params.uuid) {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
@@ -28,7 +28,7 @@ export default class UsersController {
             if (results.length === 0) {
                 return res.status(404).json({ error: 'Utilisateur non trouvé' });
             }
-            
+
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération de l\'utilisateur');
@@ -40,7 +40,7 @@ export default class UsersController {
     async getOneByUsername(req, res) {
 
         // Check if the user uuid is provided
-        if(!req.params.username){
+        if (!req.params.username) {
             return res.status(400).json({ error: 'Nom d\'utilisateur manquant' });
         }
 
@@ -69,10 +69,6 @@ export default class UsersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
-        // Check if the user is the owner of the account
-        if (req.requestingUserUUID !== req.params.uuid) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
-        }
 
         // Check if uuid, username, email, bio and profilePicture are provided
         if (!req.body.username || !req.body.email || !req.body.bio || !req.body.profilePicture) {
@@ -89,14 +85,23 @@ export default class UsersController {
             return res.status(400).json({ error: 'La bio ne doit pas dépasser 200 caractères' });
         }
 
-        let statut = null;
-
-        // Check if the statut is provided
-        if (req.body.statut) {
-            statut = req.body.statut;
-        }
 
         try {
+
+            // Get the requesting user statut
+            const [userStatusResults] = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+            
+            // Check if the user is the owner of the account
+            if (req.requestingUserUUID !== req.params.uuid && userStatusResults[0].statut !== 'administrateur') {
+                return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
+            }
+
+            let statut = null;
+
+            // Check if the statut is provided
+            if (req.body.statut) {
+                statut = req.body.statut;
+            }
 
             // Check if the user exists
             const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM users WHERE uuid = ?', [req.params.uuid]);
@@ -120,7 +125,6 @@ export default class UsersController {
             res.json({ message: "User updated", results: results });
 
         } catch (err) {
-            console.log('Une erreur est survenue lors de la mise à jour du nom d\'utilisateur de l\'utilisateur');
             res.status(500).json({ error: 'Erreur serveur' });
         }
     }
@@ -134,7 +138,7 @@ export default class UsersController {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
-         // Check if the user is the owner of the account
+        // Check if the user is the owner of the account
         if (req.requestingUserUUID !== req.params.uuid) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
@@ -167,7 +171,7 @@ export default class UsersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
-         // Check if the user is the owner of the account
+        // Check if the user is the owner of the account
         if (req.requestingUserUUID !== req.params.uuid) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
@@ -197,7 +201,7 @@ export default class UsersController {
         if (!req.body.username || !req.body.pwd) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
-        
+
         try {
             const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY username = ?', [req.body.username]);
             if (results.length === 0) {

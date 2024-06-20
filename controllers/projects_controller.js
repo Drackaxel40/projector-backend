@@ -134,7 +134,7 @@ export default class ProjectsController {
             }
 
             // Check if the project has tasks
-            const tasksQuery = await dbQuery('SELECT * FROM task WHERE project_uuid = ?', [req.params.uuid]);
+            const tasksQuery = await dbQuery('SELECT * FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
             if (tasksQuery[0].length > 0) {
                 return res.status(400).json({ error: 'Impossible de supprimer un projet contenant des tâches' });
             }
