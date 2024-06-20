@@ -5,10 +5,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadsPath = path.join(__dirname, '../uploads'); // Définir le chemin du dossier uploads ici
+const uploadsPath = path.join(__dirname, '../uploads'); // The path to the uploads folder
 
 export default class MediaController {
-    // Fonction pour traiter le téléchargement d'une image
+    // Function for upload an image
     async uploadImage(req, res) {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -17,26 +17,26 @@ export default class MediaController {
         res.json({ message: 'Image uploaded successfully', imageUrl: imageUrl });
     }
 
-    // Fonction pour supprimer une image
+    // Function for delete a image
     async deleteImage(req, res) {
         const imageName = req.params.imageName;
         const imagePath = path.join(uploadsPath, imageName);
 
-        // Vérifie si le fichier existe
+        // Check if the file exists
         fs.access(imagePath, fs.constants.F_OK, (err) => {
             if (err) {
-                // Le fichier n'existe pas
+                // Return an error if the file does not exist
                 return res.status(404).json({ error: 'Image not found' });
             }
 
-            // Supprimer le fichier
+            // Delete the file
             fs.unlink(imagePath, (err) => {
                 if (err) {
-                    // Erreur lors de la suppression du fichier
+                    // Error while deleting the file
                     return res.status(500).json({ error: 'Failed to delete image' });
                 }
 
-                // Succès
+                // Return a success message
                 res.json({ message: 'Image deleted successfully' });
             });
         });

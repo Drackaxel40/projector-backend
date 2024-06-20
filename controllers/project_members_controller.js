@@ -3,6 +3,11 @@ import { dbQuery } from "../db.js";
 export default class ProjectMembersController {
     // List all the project members
     async listAll(req, res) {
+        // Check if the project_uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project_members.id, users.username, users.uuid, role, lastLogin  FROM project_members 
             JOIN users ON project_members.user_uuid = users.uuid
@@ -18,6 +23,11 @@ export default class ProjectMembersController {
 
     // Create a new project member
     async create(req, res) {
+
+        // Check if the project_uuid, user_uuid and role are provided
+        if (!req.body.project_uuid || !req.body.user_uuid || !req.body.role) {
+            return res.status(400).json({ error: 'Données manquantes' });
+        }
 
         // Check if the user is already a member of the project
         const [resultsCheck, fieldsCheck] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.body.user_uuid]);
@@ -37,6 +47,12 @@ export default class ProjectMembersController {
 
     // Update a project member
     async update(req, res) {
+        // Check if the role and the id are provided
+        if (!req.body.role || !req.params.id) {
+            return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+
         try {
             const [results, fields] = await dbQuery('UPDATE project_members SET role = ? WHERE id = ?', [req.body.role, req.params.id]);
             res.send(results);
@@ -48,6 +64,11 @@ export default class ProjectMembersController {
 
     // Delete a project member
     async delete(req, res) {
+        // Check if the id is provided
+        if (!req.params.id) {
+            return res.status(400).json({ error: 'Id manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM project_members WHERE id = ?', [req.params.id]);
             res.send(results);
@@ -59,6 +80,11 @@ export default class ProjectMembersController {
 
     // Get all the projects where the user is a member
     async getUserProjects(req, res) {
+        // Check if the user_uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Données manquantes' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role,project_created , project_category_id, category_name FROM project_members 
             JOIN project ON project_members.project_uuid = project.uuid

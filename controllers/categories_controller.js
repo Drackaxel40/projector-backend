@@ -14,6 +14,10 @@ export default class CategoriesController {
 
     // Delete one category by his id
     async delete(req, res) {
+
+        // Check if the id is provided
+        if (!req.params.id) return res.status(400).json({ error: 'Id manquant' });
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM project_categories WHERE id = ?', [req.params.id]);
             res.send({ message: 'Deleted', results: results });
@@ -25,6 +29,9 @@ export default class CategoriesController {
 
     // Create a new category
     async create(req, res) {
+
+        // Check if the category_name is provided
+        if (!req.body.category_name) return res.status(400).json({ error: 'Nom de catégorie manquant' });
 
         const newCategory = {
             category_name: req.body.category_name
@@ -41,6 +48,12 @@ export default class CategoriesController {
 
     // Update a category by his id
     async update(req, res) {
+
+        // Check if the id and the category_name are provided
+        if (!req.params.id || !req.body.category_name) {
+            return res.status(400).json({ error: 'Données manquantes' });
+        }
+
         try {
             const [results, fields] = await dbQuery('UPDATE project_categories SET category_name = ? WHERE id = ?', [req.body.category_name, req.params.id]);
             res.send({ message: 'Updated', results: results });

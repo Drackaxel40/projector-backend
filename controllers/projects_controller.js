@@ -19,6 +19,13 @@ export default class ProjectsController {
 
     // Get projects by the user uuid
     async getUserProjects(req, res) {
+
+        // Check if the user_uuid is provided
+        if (!req.params.uuid) {
+            res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_description, users.CREATED, users.UPDATED, project_deadline, project_category_id, project_status_id, username, category_name, status_name, project_created FROM project JOIN users ON project.user_uuid = users.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
@@ -33,6 +40,13 @@ export default class ProjectsController {
 
     // Get a project by his uuid
     async getOne(req, res) {
+
+        // Check if the uuid is provided
+        if (!req.params.uuid) {
+            res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project.uuid, project_name, project_deadline, status_name, username, project_description, project_created, project_updated, category_name, project_category_id, project_status_id, users.uuid AS user_uuid, users.profilePicture as author_profile_picture
             FROM project
@@ -60,6 +74,12 @@ export default class ProjectsController {
             newProject.project_deadline = req.body.project_deadline;
         }
 
+        // Check if the project_name, project_description, user_uuid and project_category_id are provided
+        if (!newProject.project_name || !newProject.project_description || !newProject.user_uuid || !newProject.project_category_id) {
+            res.status(400).json({ error: 'Données manquantes' });
+            return;
+        }
+
         try {
             const [insertResults, insertFields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id, project_deadline) VALUES (UUID(), ?, ?, ?, ?, STR_TO_DATE(?, "%Y-%m-%d"))', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id, newProject.project_deadline]);
             res.status(201).json({ message: 'Created', results: insertResults });
@@ -72,6 +92,13 @@ export default class ProjectsController {
 
     // Delete a project by his uuid
     async deleteOne(req, res) {
+
+        // Check if the project uuid is provided
+        if (!req.params.uuid) {
+            res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM project WHERE uuid = ?', [req.params.uuid]);
             res.send({ message: 'Deleted', results: results });
@@ -83,6 +110,13 @@ export default class ProjectsController {
 
     // Update a project by his uuid
     async updateOne(req, res) {
+        
+        // Check if the project_name, project_description, project_status_id, project_deadline and project_category_id are provided
+        if (!req.body.project_name || !req.body.project_description || !req.body.project_status_id || !req.body.project_deadline || !req.body.project_category_id) {
+            res.status(400).json({ error: 'Données manquantes' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('UPDATE project SET project_status_id = ?, project_deadline = ?, project_description = ?, project_category_id = ? WHERE uuid = ?', [req.body.project_status_id, req.body.project_deadline, req.body.project_description, req.body.project_category_id ,req.params.uuid]);
             res.send({ message: 'Updated', results: results });

@@ -16,6 +16,12 @@ export default class UsersController {
 
     // Get one user by his uuid
     async getOne(req, res) {
+
+        // Check if the user uuid is provided
+        if(!req.params.uuid){
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?', [req.params.uuid]);
             res.send(results);
@@ -27,6 +33,12 @@ export default class UsersController {
 
     // Get one user by his username
     async getOneByUsername(req, res) {
+
+        // Check if the user uuid is provided
+        if(!req.params.username){
+            return res.status(400).json({ error: 'Nom d\'utilisateur manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio, profilePicture FROM users WHERE username = ?', [req.params.username]);
             res.send(results);
@@ -39,20 +51,25 @@ export default class UsersController {
 
     // Update a user
     async update(req, res) {
+
+        // Check if username and email are provided
         if (!req.body.username || !req.body.email) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
+        // Check if the username length is between 3 and 20 characters
         if (req.body.username.length < 3 || req.body.username.length > 20) {
             return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir entre 3 et 20 caractères' });
         }
 
+        // Check if the use bio length is less than 200 characters
         if (req.body.bio && req.body.bio.length > 200) {
             return res.status(400).json({ error: 'La bio ne doit pas dépasser 200 caractères' });
         }
 
         let statut = null;
 
+        // Check if the statut is provided, if yes, set it to the request body statut
         if (req.body.statut) {
             statut = req.body.statut;
         }
@@ -80,6 +97,13 @@ export default class UsersController {
 
     // Update a user password by his uuid
     async updatePwd(req, res) {
+
+        // Check if the user uuid and the new password are provided
+        if (!req.params.uuid || !req.body.pwd) {
+            return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
+        // Hash the new password
         const pwd = await bcrypt.hash(req.body.pwd, 10);
 
         try {
@@ -93,6 +117,12 @@ export default class UsersController {
 
     // Delete a user by his uuid
     async delete(req, res) {
+
+        // Check if the user uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM users WHERE uuid = ?', [req.params.uuid]);
             res.json({ message: "User deleted", results: results });
@@ -105,6 +135,7 @@ export default class UsersController {
     // Login a user
     async login(req, res) {
 
+        // Check if the username and the password are provided
         if (!req.body.username || !req.body.pwd) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
@@ -136,7 +167,7 @@ export default class UsersController {
     // Create a new user
     async create(req, res) {
 
-        // Validate request body
+        // Check if the username, email, password and cgu are provided
         if (!req.body.username || !req.body.email || !req.body.pwd || !req.body.cgu) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }

@@ -9,12 +9,6 @@ export default function verifyJWTToken(req, res, next) {
     return res.status(401).json({ error: 'Access denied' });
   }
 
-  // Allow access to login route without token
-  if ((!token && req.path === '/login') || (!token && req.path === '/create')) {
-    return next();
-  }
-
-
   try {
     // Check if token is valid
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);

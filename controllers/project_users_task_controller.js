@@ -3,6 +3,12 @@ import { dbQuery } from "../db.js";
 export default class ProjectUsersTasks {
     // Get task users of a project
     async listAll(req, res) {
+
+        // Check if the project_uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project_users_tasks.id, task_id, username, users.CREATED, lastLogin, task_name, task_description, task_status FROM project_users_tasks 
             JOIN users ON task_user_uuid = users.uuid
@@ -16,6 +22,12 @@ export default class ProjectUsersTasks {
 
     // Get all tasks of a user
     async getUserTasks(req, res) {
+
+        // Check if the uuid is provided
+        if (!req.params.uuid) {
+            return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project_users_tasks.id, task_id, task_name, task_description, task_status, uuid, username FROM project_users_tasks
             JOIN tasks ON project_users_tasks.task_id = tasks.id
@@ -30,6 +42,13 @@ export default class ProjectUsersTasks {
 
     // Add a user to a task
     async create(req, res) {
+
+        // Check if the task_id and the task_user_uuid are provided
+        if (!req.body.task_id || !req.body.task_user_uuid) {
+            return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+
         try {
             const [results, fields] = await dbQuery(`INSERT INTO project_users_tasks (task_id, task_user_uuid) VALUES (?, ?)`, [req.body.task_id, req.body.task_user_uuid]);
             res.json(results);
@@ -41,6 +60,11 @@ export default class ProjectUsersTasks {
 
     // Delete a user from a task
     async delete(req, res) {
+        // Check if the id is provided
+        if (!req.params.id) {
+            return res.status(400).json({ error: 'Id manquant' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`DELETE FROM project_users_tasks WHERE id = ?`, [req.params.id]);
             res.json(results);

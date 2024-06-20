@@ -13,6 +13,13 @@ export default class TaskStatusController {
 
     // Create a task status
     async create(req, res) {
+
+        // Check if the status_name is provided
+        if (!req.body.status_name) {
+            res.status(400).json({ error: 'Données manquantes' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('INSERT INTO task_status (status_name) VALUES (?)', [req.body.status_name]);
             res.json(results);
@@ -23,6 +30,12 @@ export default class TaskStatusController {
 
     // Update a task status
     async update(req, res) {
+        // Check if the status_name and the id are provided
+        if (!req.body.status_name || !req.params.id) {
+            res.status(400).json({ error: 'Données manquantes'});
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('UPDATE task_status SET status_name = ? WHERE id = ?', [req.body.status_name, req.params.id]);
             res.json(results);
@@ -33,6 +46,13 @@ export default class TaskStatusController {
 
     // Delete a task status
     async delete(req, res) {
+        
+        // Check if the id is provided
+        if (!req.params.id) {
+            res.status(400).json({ error: 'Id manquant' });
+            return;
+        }
+
         try {
             const [results, fields] = await dbQuery('DELETE FROM task_status WHERE id = ?', [req.params.id]);
             res.json(results);
