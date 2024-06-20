@@ -30,8 +30,9 @@ export default class ProjectMembersController {
         }
 
         // Check if the requesting user is the owner of the project
-        const [resultsOwner, fieldsOwner] = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.body.project_uuid]);
-        if (resultsOwner[0].user_uuid !== req.requestingUserUUID) {
+        const resultsOwner = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.body.project_uuid]);
+        const projectOwner = resultsOwner[0][0].user_uuid;
+        if (projectOwner !== req.requestingUserUUID) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 

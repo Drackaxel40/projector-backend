@@ -106,7 +106,8 @@ export default class ProjectsController {
 
         // Check if the requesting user is the owner of the project
         const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
-        if (result[0].user_uuid !== req.requestingUserUUID) {
+        const user_uuid = result[0][0].user_uuid;
+        if (user_uuid !== req.requestingUserUUID) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
@@ -122,15 +123,16 @@ export default class ProjectsController {
     // Update a project by his uuid
     async updateOne(req, res) {
 
-        // Check if the project_name, project_description, project_status_id, project_deadline and project_category_id are provided
-        if (!req.body.project_name || !req.body.project_description || !req.body.project_status_id || !req.body.project_deadline || !req.body.project_category_id) {
+        // Check if project_description, project_status_id, project_deadline and project_category_id are provided
+        if (!req.body.project_description || !req.body.project_status_id || !req.body.project_deadline || !req.body.project_category_id) {
             res.status(400).json({ error: 'Données manquantes' });
             return;
         }
 
         // Check if the requesting user is the owner of the project
         const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
-        if (result[0].user_uuid !== req.requestingUserUUID) {
+        const user_uuid = result[0][0].user_uuid;
+        if (user_uuid !== req.requestingUserUUID) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
