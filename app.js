@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import verifyJWTToken from './middleware/auth.js';
@@ -28,6 +29,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+
+
 const allowedOrigins = [process.env.CLIENT_URL, process.env.BACKOFFICE_URL];
 
 const corsOptions = {
@@ -42,6 +45,13 @@ const corsOptions = {
   credentials: true
 };
 
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      imgSrc: ["'self'", process.env.CLIENT_URL, process.env.BACKOFFICE_URL, "'data:"]
+    },
+  }, crossOriginResourcePolicy: { policy: 'same-site' }
+}));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
