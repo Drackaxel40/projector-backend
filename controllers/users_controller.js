@@ -204,19 +204,19 @@ export default class UsersController {
     async login(req, res) {
 
         // Check if the username and the password are provided
-        if (!req.body.username || !req.body.pwd) {
+        if (!req.body.email || !req.body.pwd) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY username = ?', [req.body.username]);
+            const [results, fields] = await dbQuery('SELECT * FROM users WHERE BINARY email = ?', [req.body.email]);
             if (results.length === 0) {
-                return res.status(400).json({ error: 'Wrong username or password' });
+                return res.status(400).json({ error: 'Wrong email or password' });
             } else {
                 const user = results[0];
                 const validPwd = await bcrypt.compare(req.body.pwd, user.pwd);
                 if (!validPwd) {
-                    return res.status(400).json({ error: 'Wrong username or password' });
+                    return res.status(400).json({ error: 'Wrong email or password' });
                 }
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
