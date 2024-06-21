@@ -5,8 +5,14 @@ import jwt from 'jsonwebtoken';
 export default class UsersController {
     // List all users
     async listAll(req, res) {
+
+        const requestingUserUUID = req.requestingUserUUID;
         try {
-            const [results, fields] = await dbQuery('SELECT uuid, username, email, users.CREATED, lastLogin, statut, bio, profilePicture FROM users ORDER BY users.username');
+            const [results, fields] = await dbQuery(`
+            SELECT uuid, username, email, users.CREATED, lastLogin, statut, bio, profilePicture 
+            FROM users 
+            WHERE uuid != ?
+            ORDER BY users.username`, [requestingUserUUID]);
             res.send(results);
         } catch (err) {
             console.log('Une erreur est survenue lors de la récupération des utilisateurs');
