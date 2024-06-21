@@ -4,7 +4,7 @@ export default class CategoriesController {
     // List all categories
     async listAll(req, res) {
         try {
-            const [results, fields] = await dbQuery('SELECT * FROM project_categories');
+            const [results, fields] = await dbQuery('SELECT * FROM project_categories ORDER BY category_name ASC');
             res.send(results);
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });

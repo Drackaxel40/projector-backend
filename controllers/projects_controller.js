@@ -78,7 +78,7 @@ export default class ProjectsController {
     // Create a project
     async create(req, res) {
         const newProject = {
-            project_name: req.body.project_name.toLowerCase(),
+            project_name: req.body.project_name,
             project_description: req.body.project_description,
             user_uuid: req.body.user_uuid,
             project_category_id: req.body.project_category_id
@@ -133,17 +133,15 @@ export default class ProjectsController {
                 return res.status(404).json({ error: 'Projet non trouvé' });
             }
 
-            // Check if the project has tasks
-            const tasksQuery = await dbQuery('SELECT * FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
-            if (tasksQuery[0].length > 0) {
-                return res.status(400).json({ error: 'Impossible de supprimer un projet contenant des tâches' });
-            }
+            // Delete the project tasks
+            const deleteProjectTasks = await dbQuery('DELETE FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
+            
 
-            // Check if the project has members
-            const membersQuery = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
-            if (membersQuery[0].length > 0) {
-                return res.status(400).json({ error: 'Impossible de supprimer un projet contenant des membres' });
-            }
+            // Delete the project members
+            const deleteProjectMembers = await dbQuery('DELETE FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
+
+            // Delete the project messages
+            const deleteProjectMessages = await dbQuery('DELETE FROM project_message WHERE project_uuid = ?', [req.params.uuid]);
 
             // Delete the project
             const [results, fields] = await dbQuery('DELETE FROM project WHERE uuid = ?', [req.params.uuid]);
@@ -159,7 +157,7 @@ export default class ProjectsController {
     async updateOne(req, res) {
 
         // Check if project_description, project_status_id, project_deadline and project_category_id are provided
-        if (!req.body.project_description || !req.body.project_status_id || !req.body.project_deadline || !req.body.project_category_id) {
+        if (!req.body.project_description || !req.body.project_status_id || !req.body.project_category_id) {
             res.status(400).json({ error: 'Données manquantes' });
             return;
         }

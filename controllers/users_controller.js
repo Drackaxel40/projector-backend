@@ -75,9 +75,8 @@ export default class UsersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
-
         // Check if uuid, username, email, bio and profilePicture are provided
-        if (!req.body.username || !req.body.email || !req.body.bio || !req.body.profilePicture) {
+        if (!req.body.username || !req.body.email) {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
@@ -103,10 +102,22 @@ export default class UsersController {
             }
 
             let statut = null;
+            let profilePicture = null;
+            let bio = null;
 
             // Check if the statut is provided
             if (req.body.statut) {
                 statut = req.body.statut;
+            }
+
+            // Check if the profilePicture is provided
+            if (req.body.profilePicture) {
+                profilePicture = req.body.profilePicture;
+            }
+
+            // Check if the bio is provided
+            if (req.body.bio) {
+                bio = req.body.bio;
             }
 
             // Check if the user exists
@@ -116,12 +127,22 @@ export default class UsersController {
             }
 
             // Update the user
-            let query = 'UPDATE users SET username = ?, email = ?, bio = ?, profilePicture = ?';
-            let params = [req.body.username, req.body.email, req.body.bio, req.body.profilePicture];
+            let query = 'UPDATE users SET username = ?, email = ?';
+            let params = [req.body.username, req.body.email];
 
             if (statut) {
                 query += ', statut = ?';
                 params.push(statut);
+            }
+
+            if (profilePicture) {
+                query += ', profilePicture = ?';
+                params.push(profilePicture);
+            }
+
+            if (bio) {
+                query += ', bio = ?';
+                params.push(bio);
             }
 
             query += ' WHERE uuid = ?';
