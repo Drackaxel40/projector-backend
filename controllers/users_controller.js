@@ -1,6 +1,7 @@
 import { dbQuery } from '../db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import generateCSRFToken from '../middleware/csrfToken.js';
 
 export default class UsersController {
     // List all users
@@ -29,7 +30,7 @@ export default class UsersController {
         }
 
         try {
-            const [results, fields] = await dbQuery('SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?', [req.params.uuid]);
+            const [results, fields] = await dbQuery(`SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?`, [req.params.uuid]);
             // Check if the user exists
             if (results.length === 0) {
                 return res.status(404).json({ error: 'Utilisateur non trouvé' });
@@ -241,8 +242,9 @@ export default class UsersController {
                 }
                 req.userUUID = user.uuid;
                 const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+                const csrfToken = generateCSRFToken();
                 // Include token in the response body
-                res.header('Authorization', token).json({ message: 'Login successful', token: token, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture });
+                res.header('Authorization', token).json({ message: 'Login successful', jwtoken: token, csrfToken: csrfToken, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture });
 
                 // Update last login date
                 await dbQuery('UPDATE users SET lastLogin = NOW() WHERE uuid = ?', [user.uuid]);

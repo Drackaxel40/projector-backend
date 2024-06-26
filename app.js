@@ -5,10 +5,9 @@ import path from 'path';
 import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
-import verifyJWTToken from './middleware/auth.js';
+import verifyJWTToken from './middleware/verifyJWTToken.js';
 import generateCSRFToken from './middleware/csrfToken.js';
 import verifyCSRFToken from './middleware/verifyCSRFToken.js';
-
 
 // Import of routers files
 import usersRouter from './routes/users.js';
@@ -26,10 +25,7 @@ import uploadRouter from './routes/upload.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 const app = express();
-
-
 
 const allowedOrigins = [process.env.CLIENT_URL, process.env.BACKOFFICE_URL];
 
@@ -48,7 +44,9 @@ const corsOptions = {
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      imgSrc: ["'self'", process.env.CLIENT_URL, process.env.BACKOFFICE_URL, "'data:"]
+      scriptSrc: ["'self'", process.env.CLIENT_URL, process.env.BACKOFFICE_URL],
+      imgSrc: ["'self'", process.env.CLIENT_URL, process.env.BACKOFFICE_URL, "'data:"],
+      connectSrc: ["'self'", process.env.CLIENT_URL, process.env.BACKOFFICE_URL],
     },
   }, crossOriginResourcePolicy: { policy: 'same-site' }
 }));
@@ -58,18 +56,10 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// Generate CSRF token
-app.get('/api/csrf-token', (req, res) => {
-  const csrfToken = generateCSRFToken();
-  res.json({ csrfToken });
-});
-
-
-
 // Initialisation of the routers with CSRF protection
 
-// For the users router, the JWTMiddleware in the users router
-app.use('/users', verifyCSRFToken, usersRouter);
+// For the users router, the middlewares are includes in the users router file in the routes folder
+app.use('/users', usersRouter);
 
 app.use('/projects', verifyJWTToken, verifyCSRFToken, projectsRouter);
 app.use('/categories', verifyJWTToken, verifyCSRFToken, categoriesRouter);
