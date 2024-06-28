@@ -31,20 +31,20 @@ export default class ProjectMessagesController {
 
         try {
             // Check if the project exists
-            const [projectResults, projectFields] = await dbQuery('SELECT * FROM projects WHERE uuid = ?', [req.body.project_uuid]);
+            const [projectResults, projectFields] = await dbQuery('SELECT * FROM project WHERE uuid = ?', [req.body.project_uuid]);
             if (projectResults.length === 0) {
                 return res.status(404).json({ error: 'Projet non trouvé' });
             }
 
-            // Check if the requesting user is a member of the project
-            const [projectUsersResults, projectUsersFields] = await dbQuery('SELECT * FROM project_users WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.requestingUserUUID]);
-            if (projectUsersResults.length === 0) {
-                return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
-            }
+            // // Check if the requesting user is a member of the project
+            // const [projectUsersResults, projectUsersFields] = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ? AND user_uuid = ?', [req.body.project_uuid, req.requestingUserUUID]);
+            // if (projectUsersResults.length === 0) {
+            //     return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
+            // }
 
             // Create the project message
             const [results, fields] = await dbQuery('INSERT INTO project_message (project_uuid, user_uuid, message_content) VALUES (?, ?, ?)', [req.body.project_uuid, req.body.user_uuid, req.body.message_content]);
-            res.send(results);
+            res.send({ message: 'Message créé' });
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
             console.log("Une erreur est survenue lors de la création du message de projet");
@@ -60,7 +60,7 @@ export default class ProjectMessagesController {
 
         try {
             // Check if the message exists
-            const [messageResults, messageFields] = await dbQuery('SELECT * FROM project_message WHERE id = ?', [req.params.id]);
+            const messageResults = await dbQuery('SELECT * FROM project_message WHERE id = ?', [req.params.id]);
             if (messageResults.length === 0) {
                 return res.status(404).json({ error: 'Message non trouvé' });
             }
@@ -71,7 +71,7 @@ export default class ProjectMessagesController {
             }
 
             const [results, fields] = await dbQuery('UPDATE project_message SET message_content = ? , modified = 1 WHERE id = ?', [req.body.message_content, req.params.id]);
-            res.send(results);
+            res.send({message: 'Message mis à jour'});
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
             console.log("Une erreur est survenue lors de la mise à jour du message de projet");
@@ -85,20 +85,21 @@ export default class ProjectMessagesController {
             return res.status(400).json({ error: 'Id manquant' });
         }
 
-        try {
-            // Check if the message exists
-            const [messageResults, messageFields] = await dbQuery('SELECT * FROM project_message WHERE id = ?', [req.params.id]);
-            if (messageResults.length === 0) {
-                return res.status(404).json({ error: 'Message non trouvé' });
-            }
+        // Check if the message exists
+        const messageResults = await dbQuery('SELECT * FROM project_message WHERE id = ?', [req.params.id]);
+        if (messageResults.length === 0) {
+            return res.status(404).json({ error: 'Message non trouvé' });
+        }
 
-            // Check if the requesting user is the author of the message
-            if (messageResults[0][0].user_uuid !== req.requestingUserUUID) {
-                return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
-            }
+        // Check if the requesting user is the author of the message
+        if (messageResults[0][0].user_uuid !== req.requestingUserUUID) {
+            return res.status(403).json({ error: 'Vous n\'avez pas les droits pour effectuer cette action' });
+        }
+
+        try {
 
             const [results, fields] = await dbQuery('DELETE FROM project_message WHERE id = ?', [req.params.id]);
-            res.send(results);
+            return results
         } catch (error) {
             res.status(500).json({ error: 'Erreur serveur' });
             console.log("Une erreur est survenue lors de la suppression du message de projet");
