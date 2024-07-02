@@ -5,8 +5,7 @@ import path from 'path';
 import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
-import verifyJWTToken from './middleware/verifyJWTToken.js';
-import generateCSRFToken from './middleware/csrfToken.js';
+import verifyJWToken from './middleware/verifyJWToken.js';
 import verifyCSRFToken from './middleware/verifyCSRFToken.js';
 
 // Import of routers files
@@ -61,15 +60,15 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // For the users router, the middlewares are includes in the users router file in the routes folder
 app.use('/users', usersRouter);
 
-app.use('/projects', verifyJWTToken, verifyCSRFToken, projectsRouter);
-app.use('/categories', verifyJWTToken, verifyCSRFToken, categoriesRouter);
-app.use('/project_members', verifyJWTToken, verifyCSRFToken, projectMembersRouter);
-app.use('/project_messages', verifyJWTToken, verifyCSRFToken, projectMessagesRouter);
-app.use('/project_status', verifyJWTToken, verifyCSRFToken, projectStatusRouter);
-app.use('/tasks', verifyJWTToken, verifyCSRFToken, tasksRouter);
-app.use('/task_status', verifyJWTToken, verifyCSRFToken, taskStatusRouter);
-app.use('/tasks_users', verifyJWTToken, verifyCSRFToken, projectUsersTasksRouter);
-app.use('/upload', verifyJWTToken, verifyCSRFToken, uploadRouter);
+app.use('/projects', verifyJWToken, verifyCSRFToken, projectsRouter);
+app.use('/categories', verifyJWToken, verifyCSRFToken, categoriesRouter);
+app.use('/project_members', verifyJWToken, verifyCSRFToken, projectMembersRouter);
+app.use('/project_messages', verifyJWToken, verifyCSRFToken, projectMessagesRouter);
+app.use('/project_status', verifyJWToken, verifyCSRFToken, projectStatusRouter);
+app.use('/tasks', verifyJWToken, verifyCSRFToken, tasksRouter);
+app.use('/task_status', verifyJWToken, verifyCSRFToken, taskStatusRouter);
+app.use('/tasks_users', verifyJWToken, verifyCSRFToken, projectUsersTasksRouter);
+app.use('/upload', verifyJWToken, verifyCSRFToken, uploadRouter);
 
 
 // Start the server
