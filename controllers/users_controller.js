@@ -96,7 +96,7 @@ export default class UsersController {
 
             // Get the requesting user statut
             const [userStatusResults] = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
-            
+
             // Check if the user is the owner of the account
             if (req.requestingUserUUID !== req.params.uuid && userStatusResults[0].statut !== 'administrateur') {
                 return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
@@ -241,10 +241,31 @@ export default class UsersController {
                     return res.status(400).json({ error: 'Wrong email or password' });
                 }
                 req.userUUID = user.uuid;
-                const token = jwt.sign({ userUUID: user.uuid }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+
                 const csrfToken = generateCSRFToken();
+
+                // Secret key to sign the JWT
+                const secretKey = process.env.JWT_SECRET_KEY;
+                // Number of rounds to generate the salt
+                const saltRounds = 10;
+                // Generate a salted secret key
+                const salt = await bcrypt.genSalt(saltRounds);
+                // The salted secret key is used to sign the JWT
+                const saltedSecretKey = secretKey + salt;
+
+                const token = jwt.sign({ userUUID: user.uuid, salt }, saltedSecretKey, { expiresIn: '1h' });
                 // Include token in the response body
-                res.header('Authorization', token).json({ message: 'Login successful', jwtoken: token, csrfToken: csrfToken, username: user.username, email: user.email, uuid: user.uuid, statut: user.statut, bio: user.bio, profilePicture: user.profilePicture });
+                res.header('Authorization', token).json({
+                    message: 'Login successful',
+                    jwtoken: token,
+                    csrfToken: csrfToken,
+                    username: user.username,
+                    email: user.email,
+                    uuid: user.uuid,
+                    statut: user.statut,
+                    bio: user.bio,
+                    profilePicture: user.profilePicture
+                });
 
                 // Update last login date
                 await dbQuery('UPDATE users SET lastLogin = NOW() WHERE uuid = ?', [user.uuid]);
