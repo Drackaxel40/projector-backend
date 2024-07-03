@@ -199,8 +199,12 @@ export default class UsersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
-        // Check if the user is the owner of the account
-        if (req.requestingUserUUID !== req.params.uuid) {
+        // Check if the user is an administrator
+        const userStatut = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
+
+        // Check if the user is the owner of the account or an administrator
+        if (req.requestingUserUUID !== req.params.uuid && userStatut[0][0].statut !== 'administrateur') {
+            console.log('Vous n\'êtes pas autorisé à effectuer cette action');
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
