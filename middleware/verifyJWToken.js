@@ -10,14 +10,18 @@ export default function verifyJWToken(req, res, next) {
   }
 
   try {
-    // Check if token is valid
+    // Decode the token to get the salt
     const decodedUnverified = jwt.decode(token);
 
+    // Check if we have the token and the salt in the token
     if (!decodedUnverified || !decodedUnverified.salt) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
+    // Get the salt from the token
     const salt = decodedUnverified.salt;
+
+    // Create a salted secret key
     const saltedSecretKey = process.env.JWT_SECRET_KEY + salt;
 
     // Verify the token with the salted secret key
