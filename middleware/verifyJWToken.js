@@ -14,7 +14,6 @@ export default function verifyJWToken(req, res, next) {
     const decodedUnverified = jwt.decode(token);
 
     if (!decodedUnverified || !decodedUnverified.salt) {
-      console.log("c'est la merde")
       return res.status(401).json({ error: 'Invalid token' });
     }
 
