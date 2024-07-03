@@ -1,4 +1,5 @@
 import { dbQuery } from "../db.js";
+import { checkUUIDFormat } from "../helpers/functions.js";
 
 export default class ProjectMembersController {
     // List all the project members
@@ -8,8 +9,14 @@ export default class ProjectMembersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
+        }
+
         try {
-            const [results, fields] = await dbQuery(`SELECT project_members.id, users.username, users.uuid, role, lastLogin  FROM project_members 
+            const [results, fields] = await dbQuery(`SELECT project_members.id, users.username, users.uuid, role, lastLogin  
+            FROM project_members 
             JOIN users ON project_members.user_uuid = users.uuid
             JOIN project ON project_members.project_uuid = project.uuid
             WHERE project_uuid = ?
@@ -27,6 +34,16 @@ export default class ProjectMembersController {
         // Check if the project_uuid, user_uuid and role are provided
         if (!req.body.project_uuid || !req.body.user_uuid || !req.body.role) {
             return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.body.project_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
+        }
+
+        // Check if the user_uuid format is correct
+        if (!checkUUIDFormat(req.body.user_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {
@@ -117,8 +134,14 @@ export default class ProjectMembersController {
             return res.status(400).json({ error: 'Données manquantes' });
         }
 
+        // Check if the user_uuid format is correct
+        if (!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
+        }
+
         try {
-            const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role,project_created , project_category_id, category_name FROM project_members 
+            const [results, fields] = await dbQuery(`SELECT project.uuid, project.project_name, project.project_description, project_members.role,project_created , project_category_id, category_name 
+            FROM project_members 
             JOIN project ON project_members.project_uuid = project.uuid
             JOIN project_categories ON project.project_category_id = project_categories.id
             WHERE project_members.user_uuid = ?`, [req.params.uuid]);

@@ -1,4 +1,5 @@
 import { dbQuery } from "../db.js";
+import { checkUUIDFormat } from "../helpers/functions.js";
 
 export default class ProjectMessagesController {
     // List all the project messages
@@ -8,6 +9,11 @@ export default class ProjectMessagesController {
             // Check if the project_uuid is provided
             if (!req.params.project_uuid) {
                 return res.status(400).json({ error: 'Uuid manquant' });
+            }
+
+            // Check if the project_uuid format is correct
+            if (!checkUUIDFormat(req.params.project_uuid)) {
+                return res.status(400).json({ error: 'Uuid incorrect' });
             }
 
             const [results, fields] = await dbQuery(`SELECT project_message.id, user_uuid, message_created, message_content, username, lastLogin, modified
@@ -27,6 +33,16 @@ export default class ProjectMessagesController {
         // Check if the project_uuid, user_uuid and message_content are provided
         if (!req.body.project_uuid || !req.body.user_uuid || !req.body.message_content) {
             return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.body.project_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
+        }
+
+        // Check if the user_uuid format is correct
+        if (!checkUUIDFormat(req.body.user_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {

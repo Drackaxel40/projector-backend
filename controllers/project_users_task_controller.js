@@ -1,4 +1,5 @@
 import { dbQuery } from "../db.js";
+import { checkUUIDFormat } from "../helpers/functions.js";
 
 export default class ProjectUsersTasks {
     // Get task users of a project
@@ -7,6 +8,11 @@ export default class ProjectUsersTasks {
         // Check if the project_uuid is provided
         if (!req.params.uuid) {
             return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {
@@ -28,6 +34,11 @@ export default class ProjectUsersTasks {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
+        // Check if the uuid format is correct
+        if (!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT project_users_tasks.id, task_id, task_name, task_description, task_status, uuid, username FROM project_users_tasks
             JOIN tasks ON project_users_tasks.task_id = tasks.id
@@ -46,6 +57,11 @@ export default class ProjectUsersTasks {
         // Check if the task_id and the task_user_uuid are provided
         if (!req.body.task_id || !req.body.task_user_uuid) {
             return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+        // Check if the task_user_uuid format is correct
+        if (!checkUUIDFormat(req.body.task_user_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {

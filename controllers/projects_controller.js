@@ -1,4 +1,5 @@
 import { dbQuery } from "../db.js";
+import { checkUUIDFormat } from "../helpers/functions.js";
 
 export default class ProjectsController {
     // List all projects
@@ -24,6 +25,12 @@ export default class ProjectsController {
         // Check if the user_uuid is provided
         if (!req.params.uuid) {
             res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
+        // Check if the uuid format is valid
+        if (!checkUUIDFormat(req.params.uuid)) {
+            res.status(400).json({ error: 'Uuid invalide' });
             return;
         }
 
@@ -56,6 +63,12 @@ export default class ProjectsController {
         // Check if the uuid is provided
         if (!req.params.uuid) {
             res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
+        // Check if the uuid format is valid
+        if (!checkUUIDFormat(req.params.uuid)) {
+            res.status(400).json({ error: 'Uuid invalide' });
             return;
         }
 
@@ -98,6 +111,12 @@ export default class ProjectsController {
             return;
         }
 
+        // Check if the uuid format is valid
+        if (!checkUUIDFormat(newProject.user_uuid)) {
+            res.status(400).json({ error: 'Uuid invalide' });
+            return;
+        }
+
         try {
             const [insertResults, insertFields] = await dbQuery('INSERT INTO project (uuid, project_name, project_description, user_uuid, project_category_id, project_deadline) VALUES (UUID(), ?, ?, ?, ?, STR_TO_DATE(?, "%Y-%m-%d"))', [newProject.project_name, newProject.project_description, newProject.user_uuid, newProject.project_category_id, newProject.project_deadline]);
             res.status(201).json({ message: 'Created', results: insertResults });
@@ -114,6 +133,12 @@ export default class ProjectsController {
         // Check if the project uuid is provided
         if (!req.params.uuid) {
             res.status(400).json({ error: 'Uuid manquant' });
+            return;
+        }
+
+        // Check if the uuid format is valid
+        if (!checkUUIDFormat(req.params.uuid)) {
+            res.status(400).json({ error: 'Uuid invalide' });
             return;
         }
 
@@ -139,7 +164,7 @@ export default class ProjectsController {
 
             // Delete the project tasks
             const deleteProjectTasks = await dbQuery('DELETE FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
-            
+
 
             // Delete the project members
             const deleteProjectMembers = await dbQuery('DELETE FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
@@ -160,11 +185,18 @@ export default class ProjectsController {
     // Update a project by his uuid
     async updateOne(req, res) {
 
-        // Check if project_description, project_status_id, project_deadline and project_category_id are provided
-        if (!req.body.project_description || !req.body.project_status_id || !req.body.project_category_id) {
+        // Check if the project uuid, project_description, project_status_id, project_deadline and project_category_id are provided
+        if (!req.params.uuid || !req.body.project_description || !req.body.project_status_id || !req.body.project_category_id) {
             res.status(400).json({ error: 'Données manquantes' });
             return;
         }
+
+        // Check if the uuid format is valid
+        if (!checkUUIDFormat(req.params.uuid)) {
+            res.status(400).json({ error: 'Uuid invalide' });
+            return;
+        }
+
 
         try {
 

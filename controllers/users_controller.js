@@ -2,6 +2,7 @@ import { dbQuery } from '../db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import generateCSRFToken from '../middleware/csrfToken.js';
+import { checkEmailFormat, checkPasswordFormat, checkUsernameFormat, checkUUIDFormat } from '../helpers/functions.js';
 
 export default class UsersController {
     // List all users
@@ -29,6 +30,11 @@ export default class UsersController {
             return res.status(400).json({ error: 'Uuid manquant' });
         }
 
+        // Check if the uuid format is valid
+        if(!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Format UUID invalide' });
+        }
+
         try {
             const [results, fields] = await dbQuery(`SELECT username, email, CREATED, lastLogin, status, bio, profilePicture FROM users WHERE uuid = ?`, [req.params.uuid]);
             // Check if the user exists
@@ -49,6 +55,10 @@ export default class UsersController {
         // Check if the user uuid is provided
         if (!req.params.username) {
             return res.status(400).json({ error: 'Nom d\'utilisateur manquant' });
+        }
+
+        if(!checkUsernameFormat(req.params.username)) {
+            return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir au moins 3 caractères alphanumériques' });
         }
 
         try {
@@ -81,6 +91,21 @@ export default class UsersController {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
+        // Check if the uuid format is valid
+        if(!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Format UUID invalide' });
+        }
+
+        // Check if the username format is valid
+        if(!checkUsernameFormat(req.body.username)) {
+            return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir au moins 3 caractères alphanumériques' });
+        }
+
+        // Check if the email format is valid
+        if(!checkEmailFormat(req.body.email)) {
+            return res.status(400).json({ error: 'Adresse email invalide' });
+        }
+
         // Check if the username length is between 3 and 20 characters
         if (req.body.username.length < 3 || req.body.username.length > 20) {
             return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir entre 3 et 20 caractères' });
@@ -97,7 +122,7 @@ export default class UsersController {
             // Get the requesting user statut
             const [userStatusResults] = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
 
-            // Check if the user is the owner of the account
+            // Check if the user is the owner of the account or an administrator
             if (req.requestingUserUUID !== req.params.uuid && userStatusResults[0].statut !== 'administrateur') {
                 return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
             }
@@ -166,6 +191,16 @@ export default class UsersController {
             return res.status(400).json({ error: 'Champs requis manquants' });
         }
 
+        // Check if the password format is valid
+        if(!checkPasswordFormat(req.body.pwd)) {
+            return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères dont une majuscule, une minuscule, un chiffre et un caractère spécial' });
+        }
+
+        // Check if the uuid format is valid
+        if(!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Format UUID invalide' });
+        }
+
         // Check if the user is the owner of the account
         if (req.requestingUserUUID !== req.params.uuid) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
@@ -197,6 +232,11 @@ export default class UsersController {
         // Check if the user uuid is provided
         if (!req.params.uuid) {
             return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
+        // Check if the uuid format is valid
+        if(!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Format UUID invalide' });
         }
 
         // Check if the user is an administrator
@@ -232,6 +272,16 @@ export default class UsersController {
         // Check if the username and the password are provided
         if (!req.body.email || !req.body.pwd) {
             return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
+        // Check if the email format is valid
+        if(!checkEmailFormat(req.body.email)) {
+            return res.status(400).json({ error: 'Adresse email invalide' });
+        }
+
+        // Check if the password format is valid
+        if(!checkPasswordFormat(req.body.pwd)) {
+            return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères dont une majuscule, une minuscule, un chiffre et un caractère spécial' });
         }
 
         try {
@@ -286,6 +336,21 @@ export default class UsersController {
         // Check if the username, email, password and cgu are provided
         if (!req.body.username || !req.body.email || !req.body.pwd || !req.body.cgu) {
             return res.status(400).json({ error: 'Champs requis manquants' });
+        }
+
+        // Check if the username format is valid
+        if(!checkUsernameFormat(req.body.username)) {
+            return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir au moins 3 caractères alphanumériques' });
+        }
+
+        // Check if the email format is valid
+        if(!checkEmailFormat(req.body.email)) {
+            return res.status(400).json({ error: 'Adresse email invalide' });
+        }
+
+        // Check if the password format is valid
+        if(!checkPasswordFormat(req.body.pwd)) {
+            return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères dont une majuscule, une minuscule, un chiffre et un caractère spécial' });
         }
 
         const newUser = {

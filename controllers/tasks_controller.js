@@ -1,4 +1,5 @@
 import { dbQuery } from "../db.js";
+import { checkUUIDFormat } from "../helpers/functions.js";
 
 export default class TasksController {
 
@@ -8,6 +9,11 @@ export default class TasksController {
         // Check if the project_uuid is provided
         if (!req.params.uuid) {
             return res.status(400).json({ error: 'Uuid manquant' });
+        }
+
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.params.uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {
@@ -28,6 +34,11 @@ export default class TasksController {
         // Check if the task_name, the task_description and the project_uuid are provided
         if (!req.body.task_name || !req.body.project_uuid || !req.body.task_description) {
             return res.status(400).json({ error: 'Données manquantes' });
+        }
+
+        // Check if the project_uuid format is correct
+        if (!checkUUIDFormat(req.body.project_uuid)) {
+            return res.status(400).json({ error: 'Uuid incorrect' });
         }
 
         try {
