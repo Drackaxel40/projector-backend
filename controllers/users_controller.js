@@ -300,14 +300,8 @@ export default class UsersController {
 
                 // Secret key to sign the JWT
                 const secretKey = process.env.JWT_SECRET_KEY;
-                // Number of rounds to generate the salt
-                const saltRounds = 10;
-                // Generate a salted secret key
-                const salt = await bcrypt.genSalt(saltRounds);
-                // The salted secret key is used to sign the JWT
-                const saltedSecretKey = secretKey + salt;
-
-                const token = jwt.sign({ userUUID: user.uuid, salt }, saltedSecretKey, { expiresIn: '1h' });
+                
+                const token = jwt.sign({ userUUID: user.uuid}, secretKey, { expiresIn: '1h' });
                 // Include token in the response body
                 res.header('Authorization', token).json({
                     message: 'Login successful',

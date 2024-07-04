@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export default function verifyJWToken(req, res, next) {
+export default function verifyJWTToken(req, res, next) {
   // Token required in the header
   const token = req.header('Authorization');
 
@@ -10,25 +10,11 @@ export default function verifyJWToken(req, res, next) {
   }
 
   try {
-    // Decode the token to get the salt
-    const decodedUnverified = jwt.decode(token);
-
-    // Check if we have the token and the salt in the token
-    if (!decodedUnverified || !decodedUnverified.salt) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    // Get the salt from the token
-    const salt = decodedUnverified.salt;
-
-    // Create a salted secret key
-    const saltedSecretKey = process.env.JWT_SECRET_KEY + salt;
-
-    // Verify the token with the salted secret key
-    const decoded = jwt.verify(token, saltedSecretKey);
+    // Check if token is valid
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
     // Add user to the request
-    req.requestingUserUUID = decoded.userUUID;
+    req.userUUID = decoded.userUUID;
 
     next();
 
@@ -40,4 +26,3 @@ export default function verifyJWToken(req, res, next) {
       return res.status(401).json({ error: 'Invalid token' });
     }
   }
-};
