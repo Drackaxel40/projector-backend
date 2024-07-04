@@ -14,7 +14,7 @@ export default function verifyJWTToken(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
     // Add user to the request
-    req.userUUID = decoded.userUUID;
+    req.requestingUserUUID = decoded.userUUID;
 
     next();
 
@@ -26,3 +26,4 @@ export default function verifyJWTToken(req, res, next) {
       return res.status(401).json({ error: 'Invalid token' });
     }
   }
+}

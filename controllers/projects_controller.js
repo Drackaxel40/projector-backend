@@ -132,12 +132,14 @@ export default class ProjectsController {
 
         // Check if the project uuid is provided
         if (!req.params.uuid) {
+            console.log("uuid manquant");
             res.status(400).json({ error: 'Uuid manquant' });
             return;
         }
 
         // Check if the uuid format is valid
         if (!checkUUIDFormat(req.params.uuid)) {
+            console.log("uuid invalide");
             res.status(400).json({ error: 'Uuid invalide' });
             return;
         }
@@ -146,13 +148,12 @@ export default class ProjectsController {
 
             // Get the statut of the requesting user
             const statutQuery = await dbQuery('SELECT statut FROM users WHERE uuid = ?', [req.requestingUserUUID]);
-            const statut = statutQuery[0][0].statut;
-
-
+            const requesterStatut = statutQuery[0][0].statut;
+            
             // Check if the requesting user is the owner of the project or an administrator
             const result = await dbQuery('SELECT user_uuid FROM project WHERE uuid = ?', [req.params.uuid]);
             const user_uuid = result[0][0].user_uuid;
-            if (user_uuid !== req.requestingUserUUID && statut !== 'administrateur') {
+            if (user_uuid !== req.requestingUserUUID && requesterStatut !== 'administrateur') {
                 return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à effectuer cette action' });
             }
 
@@ -162,16 +163,28 @@ export default class ProjectsController {
                 return res.status(404).json({ error: 'Projet non trouvé' });
             }
 
-            // Delete the project tasks
-            const deleteProjectTasks = await dbQuery('DELETE FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
+            // Check if the project has tasks
+            const tasksQuery = await dbQuery('SELECT * FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
 
+            if (tasksQuery[0].length > 0) {
+                // Delete the project tasks
+                await dbQuery('DELETE FROM tasks WHERE project_uuid = ?', [req.params.uuid]);
+            }
 
-            // Delete the project members
-            const deleteProjectMembers = await dbQuery('DELETE FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
-
-            // Delete the project messages
-            const deleteProjectMessages = await dbQuery('DELETE FROM project_message WHERE project_uuid = ?', [req.params.uuid]);
-
+            // Check if the project has members
+            const projectMembersQuery = await dbQuery('SELECT * FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
+            if(projectMembersQuery[0].length > 0){
+                // Delete the project members
+                await dbQuery('DELETE FROM project_members WHERE project_uuid = ?', [req.params.uuid]);
+            }
+            
+            // Check if the project has messages
+            const projectMessagesQuery = await dbQuery('SELECT * FROM project_message WHERE project_uuid = ?', [req.params.uuid]);
+            if(projectMessagesQuery[0].length > 0){
+                // Delete the project messages
+                await dbQuery('DELETE FROM project_message WHERE project_uuid = ?', [req.params.uuid]);
+            }
+            
             // Delete the project
             const [results, fields] = await dbQuery('DELETE FROM project WHERE uuid = ?', [req.params.uuid]);
             res.send({ message: 'Deleted', results: results });
