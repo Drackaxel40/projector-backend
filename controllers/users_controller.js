@@ -57,10 +57,6 @@ export default class UsersController {
             return res.status(400).json({ error: 'Nom d\'utilisateur manquant' });
         }
 
-        if(!checkUsernameFormat(req.params.username)) {
-            return res.status(400).json({ error: 'Le nom d\'utilisateur doit contenir au moins 3 caractères alphanumériques' });
-        }
-
         try {
 
             const [results, fields] = await dbQuery('SELECT uuid, username, email ,users.CREATED, lastLogin, statut, bio, profilePicture FROM users WHERE username = ?', [req.params.username]);
